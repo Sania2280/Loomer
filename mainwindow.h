@@ -25,11 +25,17 @@ private slots:
 
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
+    void on_listWidget_itemActivated(QListWidgetItem *item);
+
 private:
     void SendToServer(const QString& str);
 
     Ui::MainWindow *ui;
     QTcpSocket *socket;
     QByteArray Data;
+    QString MySocket;
+    QVector<QString> ActiveDialog;
+    QString Interlocutor;
+
 };
 #endif // MAINWINDOW_H

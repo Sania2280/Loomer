@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include<QListWidget>
+#include<QStringBuilder>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     socket = new QTcpSocket(this);
 
     if (socket->state() != QAbstractSocket::ConnectedState) {
-        socket->connectToHost("127.0.0.1", 2323);
+        socket->connectToHost("192.168.186.1", 2323);
     }
 
     connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
@@ -29,6 +30,11 @@ void MainWindow::slotReadyRead() {
         QString str;
         in >> str;
 
+        QString Identifier = str.left(2);
+        int messType = Identifier.toInt();
+        if(messType==04){
+        ui->textBrowser->append(Identifier);
+        }
 
         if(str.startsWith("thEinDeNtIfIcAtOr")){
             QString identifierPart = str.mid(QString("thEinDeNtIfIcAtOr ").length());
@@ -44,10 +50,11 @@ void MainWindow::slotReadyRead() {
         }
 
          if (str.startsWith("mYthEinDeNtIfIcAtOr")){
-            QString identifierPart = str.mid(QString("thEinDeNtIfIcAtOr ").length());
+            QString identifierPart = str.mid(QString("myEinDeNtIfIcAtOr ").length());
             QStringList parts = identifierPart.split(", ");
             QString num = parts[1];
             setWindowTitle(num);
+            MySocket =/* parts[0] % " " %*/ parts[1];
         }
 
          if (str.startsWith("tOrEmUvE ")) {
@@ -57,6 +64,7 @@ void MainWindow::slotReadyRead() {
 
              if (parts.size() > 1) {
                  QString valueToRemove = parts[1];  // Значення, яке потрібно знайти та видалити
+                 qDebug()<<"To delete" << valueToRemove;
                  QList<QListWidgetItem*> items = ui->listWidget->findItems(valueToRemove, Qt::MatchExactly);
 
                  if (!items.isEmpty()) {
@@ -74,9 +82,15 @@ void MainWindow::slotReadyRead() {
              }
          }
 
+         if(str.startsWith("AlOuSeComMuniCaTiOn ")){
+             QString identifier = str.mid(QString("AlOuSeComMuniCaTiOn ,").length()).trimmed();
+             ActiveDialog.push_back(identifier);
+             qDebug()<<identifier << "reciver";
+         }
 
+         if(str.startsWith("MeSaGe ")){
 
-
+         }
     }
 
     else {
@@ -92,7 +106,8 @@ void MainWindow::SendToServer(const QString& str) {
         out.setVersion(QDataStream::Qt_6_0);
         out << str;
         socket->write(data);
-        this->setWindowTitle(data);
+        qDebug()<<socket;
+        // this->setWindowTitle(data);
     }
     else {
         ui->textBrowser->append("Socket not connected");
@@ -106,13 +121,32 @@ void MainWindow::on_pushButton_2_clicked() {
 }
 
 void MainWindow::on_lineEdit_returnPressed() {
-    SendToServer(ui->lineEdit->text());
+    // Формируем строку сообщения
+    QString message = QString("04,%1,%2,%3")
+                          .arg(Interlocutor)
+                          .arg(MySocket)
+                          .arg(ui->lineEdit->text());
+
+
+    SendToServer(message);
+
     ui->lineEdit->clear();
 }
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString num = item->text();
+    QString socket = ("hWaNtToTaLk ") % MySocket % ", " % num;
     ui->textBrowser->append(num);
+    qDebug()<<socket;
+   // SendToServer(socket);
+    Interlocutor = num;
+    delete item;
+}
+
+
+void MainWindow::on_listWidget_itemActivated(QListWidgetItem *item)
+{
+
 }
 
