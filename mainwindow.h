@@ -29,6 +29,8 @@ private slots:
 
 private:
     void SendToServer(const QString& str);
+    void closeEvent(QCloseEvent* event) ;
+
 
     Ui::MainWindow *ui;
     QTcpSocket *socket;

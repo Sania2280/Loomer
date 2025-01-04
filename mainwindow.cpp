@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include<QListWidget>
 #include<QStringBuilder>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -24,11 +25,14 @@ MainWindow::~MainWindow() {
 
 void MainWindow::slotReadyRead() {
     QDataStream in(socket);
+
     in.setVersion(QDataStream::Qt_6_0);
 
     if (in.status() == QDataStream::Ok) {
         QString str;
         in >> str;
+
+        qDebug()<<str;
 
         QString Identifier = str.left(2);
         int messType = Identifier.toInt();
@@ -42,11 +46,13 @@ void MainWindow::slotReadyRead() {
             if (parts.size() == 2) {
                 if(ui->listWidget->findItems(parts[1],Qt::MatchExactly).isEmpty()){
                     QString string = parts[0]+" | "+parts[1];
-                ui->listWidget->addItem(parts[1]);
+                    ui->listWidget->addItem(parts[1]);
                     qDebug()<<"Add";
-                parts.clear();
+                    parts.clear();
                 }
+                // ui->listWidget->clear();
             }
+
         }
 
          if (str.startsWith("mYthEinDeNtIfIcAtOr")){
@@ -55,6 +61,7 @@ void MainWindow::slotReadyRead() {
             QString num = parts[1];
             setWindowTitle(num);
             MySocket =/* parts[0] % " " %*/ parts[1];
+            qDebug()<<"My socket"<<MySocket;
         }
 
          if (str.startsWith("tOrEmUvE ")) {
@@ -150,3 +157,11 @@ void MainWindow::on_listWidget_itemActivated(QListWidgetItem *item)
 
 }
 
+void MainWindow::closeEvent(QCloseEvent* event) {
+    // Пример: Сохраняем данные перед закрытием
+    bool shouldSave = true;  // Эта переменная может быть результатом вашего алгоритма сохранения
+    if (shouldSave) {
+        // Сохраняем данные
+        qDebug() << "Saving data...";
+    }
+}

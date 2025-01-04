@@ -297,6 +297,31 @@ release/moc_mainwindow.cpp: ../../mainwindow.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qlocale.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qguiapplication_platform.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabwidget.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QListWidgetItem \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistwidget.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qframe.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qabstractitemmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qitemselectionmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyleoption.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qvalidator.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qregularexpression.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyle.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabbar.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qrubberband.h \
 		release/moc_predefs.h \
 		../../../../Qt/6.7.2/mingw_64/bin/moc.exe
 	'C:\Qt\6.7.2\mingw_64\bin\moc.exe' $(DEFINES) --include C:/Cmake/Client/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/release/moc_predefs.h -IC:/Qt/6.7.2/mingw_64/mkspecs/win32-g++ -IC:/Cmake/Client -IC:/Qt/6.7.2/mingw_64/include -IC:/Qt/6.7.2/mingw_64/include/QtWidgets -IC:/Qt/6.7.2/mingw_64/include/QtGui -IC:/Qt/6.7.2/mingw_64/include/QtNetwork -IC:/Qt/6.7.2/mingw_64/include/QtCore -I. -IC:/Qt/Tools/mingw1120_64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++ -IC:/Qt/Tools/mingw1120_64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32 -IC:/Qt/Tools/mingw1120_64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/backward -IC:/Qt/Tools/mingw1120_64/lib/gcc/x86_64-w64-mingw32/11.2.0/include -IC:/Qt/Tools/mingw1120_64/lib/gcc/x86_64-w64-mingw32/11.2.0/include-fixed -IC:/Qt/Tools/mingw1120_64/x86_64-w64-mingw32/include ../../mainwindow.h -o release/moc_mainwindow.cpp
@@ -513,6 +538,31 @@ release/main.o: ../../main.cpp ../../mainwindow.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qlocale.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qguiapplication_platform.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabwidget.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QListWidgetItem \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistwidget.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qframe.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qabstractitemmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qitemselectionmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyleoption.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qvalidator.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qregularexpression.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyle.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabbar.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qrubberband.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QApplication \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release/main.o ../../main.cpp
@@ -706,7 +756,67 @@ release/mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qlocale.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qguiapplication_platform.h \
 		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabwidget.h \
-		ui_mainwindow.h
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QListWidgetItem \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistwidget.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlistview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemview.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qframe.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qabstractitemmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qitemselectionmodel.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyleoption.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qvalidator.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qregularexpression.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractslider.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstyle.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtabbar.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qrubberband.h \
+		ui_mainwindow.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/QVariant \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QApplication \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qapplication.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QFormLayout \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qformlayout.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QLayout \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlayout.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qboxlayout.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qgridlayout.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QGridLayout \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QLineEdit \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qlineedit.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qtextcursor.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qtextdocument.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qtextformat.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qpen.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtGui/qtextoption.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QListWidget \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QMenuBar \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qmenubar.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qmenu.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QPushButton \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qpushbutton.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QStatusBar \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qstatusbar.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QTextBrowser \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtextbrowser.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/qtextedit.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtWidgets/QWidget \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/QStringBuilder \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/QTimer \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qtimer.h \
+		../../../../../../Qt/6.7.2/mingw_64/include/QtCore/qbasictimer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release/mainwindow.o ../../mainwindow.cpp
 
 release/moc_mainwindow.o: release/moc_mainwindow.cpp 
