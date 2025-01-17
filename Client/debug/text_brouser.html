@@ -1,0 +1,41 @@
+QString MainWindow::LoadBaseTemplate() {
+    return R"(
+<html>
+<head>
+    <style>
+        html, body {
+            height: 100%; /* Устанавливаем высоту 100% для всех родительских элементов */
+            margin: 0; /* Убираем отступы по умолчанию */
+            padding: 0; /* Убираем внутренние отступы */
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        .right {
+            text-align: right;
+            background-color: lightblue;
+            border-radius: 10px;
+            padding: 10px;
+            margin-right: 50px;
+        }
+
+        .left {
+            text-align: left;
+            background-color: lightgreen;
+            border-radius: 10px;
+            padding: 10px;
+            margin-left: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Место для сообщений -->
+</body>
+</html>
+)";
+}

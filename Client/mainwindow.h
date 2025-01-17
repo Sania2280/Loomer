@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+    #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QListWidgetItem>
@@ -30,6 +30,10 @@ private:
     void SendToServer(const QString &str);
     void Socket_print();
     void Socket_delete(QString socket_to_delete);
+
+    QString Load_HTML_from_File();
+    QString Add_New_Mesage(QString mesage);
+    QString LoadBaseTemplate();
 
     Ui::MainWindow *ui;
     QTcpSocket *socket;

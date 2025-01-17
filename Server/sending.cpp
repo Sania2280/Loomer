@@ -89,5 +89,5 @@ void Sending::sendToSocket(QTcpSocket *socket, const QString &message) {
                  << socket->errorString();
     }
 
-    QThread::msleep(120);
+    QThread::msleep(130);
 }
