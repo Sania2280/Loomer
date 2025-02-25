@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/image">
+        <file>images/send.png</file>
+        <file>images/user.png</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file>styles/style.qss</file>
+    </qresource>
+</RCC>
