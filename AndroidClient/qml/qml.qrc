@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>Main.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>components/CountrySelector.qml</file>
+        <file>pages/LoginPage.qml</file>
+        <file>pages/RegisterPage.qml</file>
+        <file>pages/PasswordPage.qml</file>
+    </qresource>
+</RCC>
