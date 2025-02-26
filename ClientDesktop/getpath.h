@@ -1,7 +1,8 @@
 #ifndef GETPATH_H
 #define GETPATH_H
-#include "enums.h"
 #include <QString>
+
+#include "enums.h"
 
 class Get_My_Path
 {

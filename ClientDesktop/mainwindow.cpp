@@ -15,8 +15,9 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
-#include <enums.h>
 #include <msgpack.hpp>
+
+#include "enums.h"
 
 
 Config::Settings Config::settings;
@@ -28,9 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
 
-    Get_My_Path get_my_path;
-
-    QIcon buton_icon(get_my_path.GetPath(Directorys::IMAGED, Files::BUTON));
+    QIcon buton_icon("./images/send.png");
     ui->pushButton->setIcon(buton_icon);
 
     ui->listWidget_2->setSpacing(7);
@@ -217,9 +216,8 @@ void MainWindow::Socket_print() {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
-            Get_My_Path get_my_path;
             QListWidgetItem *item =
-                new QListWidgetItem(QIcon(get_my_path.GetPath(Directorys::IMAGED, Files::USER)), i);
+                new QListWidgetItem(QIcon("./images/user.png"), i);
             ui->listWidget->setIconSize(QSize(25, 25));
             ui->listWidget->addItem(item);
         }
@@ -245,7 +243,7 @@ QString MainWindow::Style_Sheete() {
 
     Get_My_Path get_my_path;
 
-    QFile styleFile(get_my_path.GetPath(Directorys::STYLES, Files::STYLE)); // Убедитесь, что путь корректный
+    QFile styleFile("./styles/style.qss"); // Убедитесь, что путь корректный
     if (styleFile.open(QFile::ReadOnly)) {
         QString styleSheet = QLatin1String(styleFile.readAll());
         styleFile.close();
@@ -259,8 +257,7 @@ QString MainWindow::Style_Sheete() {
 }
 
 void Config::Read() {
-    Get_My_Path get_my_path;
-    QFile file(get_my_path.GetPath(Directorys::CONFIG, Files::NON));
+    QFile file("config_client.json");
     if (!file.open(QIODevice::ReadOnly)) {
         qWarning() << "Error open config";
         return;

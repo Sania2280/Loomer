@@ -22,8 +22,9 @@ protected:
 private slots:
     void slotsReadyRead();
 
-private:
+public:
     static QList<QTcpSocket *> Sockets;
+private:
     static QMutex mutex;
 
     Sending *sendingPtr = nullptr;

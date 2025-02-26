@@ -5,12 +5,13 @@
 #include <QMainWindow>
 #include <QTcpSocket>
 #include <QVector>
+#include <QJsonObject>
+#include <QMainWindow>
+
 #include "enums.h"
 #include "getpath.h"
 
 
-#include <QJsonObject>
-#include <QMainWindow>
 
 
 QT_BEGIN_NAMESPACE

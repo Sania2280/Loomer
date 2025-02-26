@@ -1,10 +1,11 @@
 #ifndef CUSTOMLISTWIDGET_H
 #define CUSTOMLISTWIDGET_H
 
-#include "enums.h"
 #include <QWidget>
 #include <QLabel>
 #include <QHBoxLayout>
+
+#include "enums.h"
 
 class CustomListItem : public QWidget
 {

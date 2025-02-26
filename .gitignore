@@ -3,6 +3,4 @@ build/
 Client/build/
 Server/build/
 
-# Ігнорування файлів налаштувань Qt Creator
-Client/Client.pro.user
-Server/Server.pro.user
+*.user

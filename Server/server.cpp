@@ -113,15 +113,7 @@ void server::slotsReadyRead() {
 
 void Config::Read()
 {
-    QString appDir = QCoreApplication::applicationDirPath();
-    QDir baseDir(appDir);
-    baseDir.cdUp(); // Поднимаемся к папке build
-    baseDir.cdUp(); // Поднимаемся к папке Client
-    baseDir.cdUp();
-
-    QString filePath = baseDir.filePath("config.json");
-
-    QFile file(filePath);
+    QFile file("./config.json");
     if (!file.open(QIODevice::ReadOnly)) {
         qFatal() << "Error open config";
         return;

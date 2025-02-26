@@ -38,12 +38,8 @@ void CustomListItem::paintEvent(QPaintEvent *event)
 }
 
 QString CustomListItem::Style_Sheete() {
-
-
     if (Style.isEmpty() ){
-        Get_My_Path get_my_path;
-
-        QFile styleFile(get_my_path.GetPath(Directorys::STYLES, Files::ITEM)); // Убедитесь, что путь корректный
+        QFile styleFile("./styles/item_style.qss"); // Убедитесь, что путь корректный
         if (styleFile.open(QFile::ReadOnly)) {
             Style = QLatin1String(styleFile.readAll());
             styleFile.close();

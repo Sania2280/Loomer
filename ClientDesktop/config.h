@@ -1,8 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <mainwindow.h>
 #include <QJsonObject>
+
+#include "mainwindow.h"
 
 class Config {
 private:
