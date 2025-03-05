@@ -1,20 +1,17 @@
-#include "qmutex.h"
 #include <QDebug>
 #include <QStringBuilder>
 #include <QTimer>
+#include <QCoreApplication>
+#include <QDir>
 
 #include "server.h"
 #include "sending.h"
 #include "enums.h"
 #include "Config.hpp"
 #include "m_pack.h"
+#include "qmutex.h"
 
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QCoreApplication>
-#include <QDir>
+
 
 #include <msgpack.hpp>
 

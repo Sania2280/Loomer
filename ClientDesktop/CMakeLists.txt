@@ -15,10 +15,13 @@ target_link_libraries(ClientDesktop
         Qt6::Widgets
         Qt6::Network
         msgpack-cxx
+        nlohmann_json::nlohmann_json
+        tomlplusplus::tomlplusplus
 )
 
 # Устанавливаем путь для конфигурационного файла
 configure_file(config.json ${CMAKE_BINARY_DIR}/bin/config_client.json COPYONLY)
+configure_file(config.toml ${CMAKE_BINARY_DIR}/bin/config_client.toml COPYONLY)
 
 # TODO fix later
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/images/send.png ${CMAKE_BINARY_DIR}/bin/images/send.png COPYONLY)

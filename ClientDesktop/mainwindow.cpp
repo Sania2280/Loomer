@@ -54,14 +54,24 @@ void MainWindow::closeEvent(QCloseEvent *event){
 
 }
 
-void MainWindow::setupConnection(){
+void MainWindow::setupConnection() {
+    qDebug() << "Trying to connect to server at:"
+             << Config::settings.server_ip << ":" << Config::settings.server_port;
+
+    if (socket->state() == QAbstractSocket::ConnectingState ||
+        socket->state() == QAbstractSocket::ConnectedState) {
+        qWarning() << "Already connecting or connected, skipping connectToHost()";
+        return;
+    }
+
     connect(socket, &QTcpSocket::connected, this, &MainWindow::onConnected);
     connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onError);
     connect(socket, &QTcpSocket::disconnected, this, &MainWindow::onDisconnected);
 
     socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
-
 }
+
+
 
 
 void MainWindow::onConnected() {
@@ -257,31 +267,72 @@ QString MainWindow::Style_Sheete() {
 }
 
 void Config::Read() {
-    QFile file("config_client.json");
+    QString filePath = "config_client.json";
+    if (!QFile::exists(filePath)) {
+        qDebug() << "JSON config not found, trying TOML...";
+        filePath = "config_client.toml";
+    }
+
+    if (!QFile::exists(filePath)) {
+        qWarning() << "No config file found!";
+        return;
+    }
+
+    qDebug() << "Using config file:" << filePath;
+
+    if (filePath.endsWith(".json")) {
+        ReadJson(filePath);
+    } else if (filePath.endsWith(".toml")) {
+        ReadToml(filePath);
+    } else {
+        qWarning() << "Unknown config file format!";
+    }
+}
+
+
+void Config::ReadJson(const QString &filePath) {
+    QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error open config";
+        qWarning() << "Error opening JSON config:" << filePath;
         return;
     }
 
     QByteArray data = file.readAll();
     file.close();
 
-    // Парсим JSON
-    QJsonDocument config_json = QJsonDocument::fromJson(data);
-
-    if (config_json.isNull()) {
-        qDebug() << "Error worck with config";
+    QJsonDocument configJson = QJsonDocument::fromJson(data);
+    if (configJson.isNull() || !configJson.isObject()) {
+        qWarning() << "Invalid JSON format in config";
         return;
     }
 
-    QJsonObject config_obj = config_json.object();
+    QJsonObject configObj = configJson.object().value("Settings").toObject();
+    settings.server_ip = configObj.value("server-ip").toString();
+    settings.server_port = configObj.value("server-port").toInt();
 
-    Config::settings.server_ip =
-        config_obj.value("Settings").toObject().value("server-ip").toString();
-    Config::settings.server_port =
-        config_obj.value("Settings").toObject().value("server-port").toInt();
-
+    qDebug() << "Loaded JSON Config -> IP:" << settings.server_ip << ", Port:" << settings.server_port;
 }
+
+void Config::ReadToml(const QString &filePath) {
+    try {
+        settings.config_toml = toml::parse_file(filePath.toStdString());
+
+        if (auto ip = settings.config_toml["Settings"]["server-ip"].value<std::string>()) {
+            settings.server_ip = QString::fromStdString(*ip);
+        }
+
+        if (auto port = settings.config_toml["Settings"]["server-port"].value<int>()) {
+            settings.server_port = static_cast<qint16>(*port);
+        }
+
+        qDebug() << "Loaded TOML Config -> IP:" << settings.server_ip << ", Port:" << settings.server_port;
+
+    } catch (const std::exception &e) {
+        qWarning() << "Error parsing TOML:" << e.what();
+    }
+}
+
+
 
 QString M_pack::unpack(QByteArray rawData) {
 

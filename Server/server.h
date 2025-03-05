@@ -1,10 +1,10 @@
-#ifndef SERVER_H
-#define SERVER_H
+#pragma once
 
-#include "qmutex.h"
 #include <QList>
 #include <QTcpServer>
 #include <QTcpSocket>
+
+#include "qmutex.h"
 #include "Config.hpp"
 
 class Sending;
@@ -45,4 +45,4 @@ public:
 
 };
 
-#endif // SERVER_H
+
