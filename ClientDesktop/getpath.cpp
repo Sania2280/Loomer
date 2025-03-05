@@ -1,4 +1,5 @@
 #include "getpath.h"
+
 #include <QDir>
 #include <QCoreApplication>
 

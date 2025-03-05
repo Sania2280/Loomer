@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QListWidgetItem>
 #include <QMainWindow>
@@ -64,4 +63,3 @@ protected:
 };
 
 
-#endif // MAINWINDOW_H

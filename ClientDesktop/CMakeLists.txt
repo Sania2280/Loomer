@@ -1,5 +1,3 @@
-# Client/CMakeLists.txt
-
 project(ClientDesktop LANGUAGES CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)

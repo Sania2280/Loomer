@@ -4,10 +4,11 @@
 #include "m_pack.h"
 #include "customwidgetitem.h"
 #include "getpath.h"
+#include "enums.h"
+
 
 #include <QListWidget>
 #include <QStringBuilder>
-#include <QDir>
 #include <QTimer>
 
 #include <QFile>
@@ -17,10 +18,8 @@
 
 #include <msgpack.hpp>
 
-#include "enums.h"
 
 
-Config::Settings Config::settings;
 
 
 
@@ -265,73 +264,6 @@ QString MainWindow::Style_Sheete() {
     return res;
 
 }
-
-void Config::Read() {
-    QString filePath = "config_client.json";
-    if (!QFile::exists(filePath)) {
-        qDebug() << "JSON config not found, trying TOML...";
-        filePath = "config_client.toml";
-    }
-
-    if (!QFile::exists(filePath)) {
-        qWarning() << "No config file found!";
-        return;
-    }
-
-    qDebug() << "Using config file:" << filePath;
-
-    if (filePath.endsWith(".json")) {
-        ReadJson(filePath);
-    } else if (filePath.endsWith(".toml")) {
-        ReadToml(filePath);
-    } else {
-        qWarning() << "Unknown config file format!";
-    }
-}
-
-
-void Config::ReadJson(const QString &filePath) {
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error opening JSON config:" << filePath;
-        return;
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument configJson = QJsonDocument::fromJson(data);
-    if (configJson.isNull() || !configJson.isObject()) {
-        qWarning() << "Invalid JSON format in config";
-        return;
-    }
-
-    QJsonObject configObj = configJson.object().value("Settings").toObject();
-    settings.server_ip = configObj.value("server-ip").toString();
-    settings.server_port = configObj.value("server-port").toInt();
-
-    qDebug() << "Loaded JSON Config -> IP:" << settings.server_ip << ", Port:" << settings.server_port;
-}
-
-void Config::ReadToml(const QString &filePath) {
-    try {
-        settings.config_toml = toml::parse_file(filePath.toStdString());
-
-        if (auto ip = settings.config_toml["Settings"]["server-ip"].value<std::string>()) {
-            settings.server_ip = QString::fromStdString(*ip);
-        }
-
-        if (auto port = settings.config_toml["Settings"]["server-port"].value<int>()) {
-            settings.server_port = static_cast<qint16>(*port);
-        }
-
-        qDebug() << "Loaded TOML Config -> IP:" << settings.server_ip << ", Port:" << settings.server_port;
-
-    } catch (const std::exception &e) {
-        qWarning() << "Error parsing TOML:" << e.what();
-    }
-}
-
 
 
 QString M_pack::unpack(QByteArray rawData) {

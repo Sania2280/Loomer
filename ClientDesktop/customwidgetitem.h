@@ -1,11 +1,9 @@
-#ifndef CUSTOMLISTWIDGET_H
-#define CUSTOMLISTWIDGET_H
+#pragma once
+
 
 #include <QWidget>
 #include <QLabel>
 #include <QHBoxLayout>
-
-#include "enums.h"
 
 class CustomListItem : public QWidget
 {
@@ -26,4 +24,3 @@ private:
     static QString Style ;
 };
 
-#endif // CUSTOMLISTWIDGET_H
