@@ -1,5 +1,5 @@
-#ifndef M_PACK_H
-#define M_PACK_H
+#pragma once
+
 #include <QString>
 
 class M_pack{
@@ -8,4 +8,3 @@ public:
     std::string puck(QString rawData);
 };
 
-#endif // M_PACK_H

@@ -13,7 +13,7 @@ setComunication::setComunication(QObject *parent)
 void setComunication::workInThread()
 {
     // qDebug() << "Working in thread:";
-    for (auto i : Sockets) {
+    for (auto & i : Sockets) {
         qDebug() << i;
     }
 }
@@ -22,7 +22,7 @@ void setComunication::fromMain(server *s)
 {
     // qDebug() << "From Main:";
     Sockets.clear(); // Очистить старые данные
-    for (auto socket : s->Sockets) {
+    for (auto & socket : s->Sockets) {
         Sockets.append(socket); // Используем append, а не присвоение
         qDebug() << socket;
     }

@@ -1,5 +1,5 @@
-#ifndef SENDING_H
-#define SENDING_H
+#pragma once
+
 
 #include <QDebug>
 #include <QMutex>
@@ -28,4 +28,3 @@ public slots:
     void sendToSocket(QTcpSocket *socket, const QString &message);
 };
 
-#endif // SENDING_H

@@ -1,5 +1,4 @@
-#ifndef ENUMS_H
-#define ENUMS_H
+#pragma once
 
 enum MesageIdentifiers {
 
@@ -10,4 +9,3 @@ enum MesageIdentifiers {
 
 };
 
-#endif // ENUMS_H
