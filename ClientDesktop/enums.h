@@ -1,5 +1,4 @@
-#ifndef ENUMS_H
-#define ENUMS_H
+#pragma once
 
 enum MesageIdentifiers {
 
@@ -26,4 +25,3 @@ enum class Files {
     NON
 };
 
-#endif // ENUMS_H

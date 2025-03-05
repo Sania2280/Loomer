@@ -1,5 +1,5 @@
-#ifndef GETPATH_H
-#define GETPATH_H
+#pragma once
+
 #include <QString>
 
 #include "enums.h"
@@ -11,4 +11,3 @@ public:
     QString GetPath(Directorys target, Files directory);
 };
 
-#endif // GETPATH_H

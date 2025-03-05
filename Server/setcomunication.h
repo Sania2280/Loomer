@@ -1,11 +1,11 @@
-#ifndef SETCOMUNICATION_H
-#define SETCOMUNICATION_H
+#pragma once
 
 #include <QObject>
 #include <QThread>
 #include <QList>
 #include <QTcpSocket>
 #include <QTimer>
+
 #include "server.h"
 
 class setComunication : public QObject
@@ -25,4 +25,3 @@ private:
 
 };
 
-#endif // SETCOMUNICATION_H

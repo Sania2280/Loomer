@@ -1,14 +1,21 @@
 #pragma once
 
-#include <QJsonObject>
+#include <string>
+#include <cstdint>
+#include <nlohmann/json.hpp>
+#include <toml++/toml.h>
 #include <QTcpSocket>
+
 
 class Config {
 public:
     struct Settings {
-        QJsonObject config_obj;
-        qint16 server_port;
-        QHostAddress::SpecialAddress server_channel;
+        nlohmann::json config_json;  // JSON конфігурація
+        toml::table config_toml;     // TOML конфігурація
+        int16_t server_port;
+        // std::string server_channel;
+        QHostAddress::SpecialAddress server_channel;  // Kept as QHostAddress::SpecialAddress
+
     };
 
 public:
@@ -20,7 +27,11 @@ public:
     const Settings& GetSettings() const;
 
 private:
-    std::string filePath;
+    bool isJsonFile() const;
 
+    std::string filePath;
     Settings settings;
+
+    void LoadJson();
+    void LoadToml();
 };

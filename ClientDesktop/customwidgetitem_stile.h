@@ -1,5 +1,5 @@
-#ifndef CUSTOMWIDGETITEM_STILE_H
-#define CUSTOMWIDGETITEM_STILE_H
+#pragma once
+
 
 class Widget_Stile{
 private:
@@ -7,4 +7,3 @@ private:
 public:
 };
 
-#endif // CUSTOMWIDGETITEM_STILE_H
