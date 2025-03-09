@@ -7,7 +7,7 @@
 #include "sending.h"
 #include "enums.h"
 #include "Config.hpp"
-#include "m_pack.h"
+#include "Mpack.hpp"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -15,17 +15,6 @@
 #include <QJsonValue>
 #include <QCoreApplication>
 #include <QDir>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdouble-promotion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wshadow"
-
-#include <msgpack.hpp>
-
-#pragma GCC diagnostic pop
 
 QList<QTcpSocket *> server::Sockets;
 QMutex server::mutex;
@@ -76,9 +65,8 @@ void server::incomingConnection(qintptr socketDescriptor) {
 void server::slotsReadyRead() {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
-        M_pack m_pack;
         qInfo() << "Reading data...";
-        QString str = m_pack.unpack(socket->readAll());
+        QString str = Mpack::unpack(socket->readAll());
 
         QString Identifier = str.left(1);
         QStringList parts = str.split(",");
@@ -125,19 +113,3 @@ void Loger::myLogMessageHandler(const QtMsgType type, const QMessageLogContext& 
      fprintf(stderr, "%s", qUtf8Printable(formattedMsg));
      fflush(stderr);
 }
-
-
- QString M_pack::unpack(QByteArray rawData) {
-     msgpack::object_handle oh = msgpack::unpack(rawData.constData(), rawData.size());
-     msgpack::object obj = oh.get();
-     QString data = QString::fromStdString(obj.as<std::string>());
-     return data;
- }
-
- std::string M_pack::puck(QString rawData){
-     std::string msg = rawData.toStdString();
-     msgpack::sbuffer buffer;
-     msgpack::pack(buffer, msg);
-    return std::string(buffer.data(), buffer.size());
- }
-

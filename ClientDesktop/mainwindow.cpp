@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "config.h"
-#include "m_pack.h"
+#include "Mpack.hpp"
 #include "customwidgetitem.h"
 #include "getpath.h"
 
@@ -15,23 +15,9 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdouble-promotion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wshadow"
-
-#include <msgpack.hpp>
-
-#pragma GCC diagnostic pop
-
 #include "enums.h"
 
-
 Config::Settings Config::settings;
-
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -99,7 +85,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    M_pack msg_p;
+    Mpack msg_p;
     QString str = msg_p.unpack(socket->readAll());
     QStringList parts = str.split(",");
     int messType = parts[0].toInt();
@@ -163,7 +149,7 @@ void MainWindow::slotReadyRead() {
 
 void MainWindow::SendToServer(const QString &str) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        M_pack m_pack;
+        Mpack m_pack;
         socket->write(m_pack.puck(str).data());
         qDebug() << socket;
     } else {
@@ -294,21 +280,3 @@ void Config::Read() {
     Config::settings.server_port = static_cast<qint16>(objectSettings.value("server-port").toInt());
 
 }
-
-QString M_pack::unpack(QByteArray rawData) {
-
-    msgpack::object_handle oh = msgpack::unpack(rawData.constData(), rawData.size());
-    msgpack::object obj = oh.get();
-    QString data = QString::fromStdString(obj.as<std::string>());
-    return data;
-}
-
-std::string M_pack::puck(QString rawData){
-
-    std::string msg = rawData.toStdString();
-    msgpack::sbuffer buffer;
-    msgpack::pack(buffer, msg);
-    return std::string(buffer.data(), buffer.size());
-}
-
-
