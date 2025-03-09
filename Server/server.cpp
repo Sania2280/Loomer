@@ -7,25 +7,14 @@
 #include "sending.h"
 #include "enums.h"
 #include "Config.hpp"
-#include "m_pack.h"
 #include "cliendatabase.h"
 
+#include "Mpack.hpp"
 
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QCoreApplication>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdouble-promotion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wshadow"
-
-#include <msgpack.hpp>
-
-#pragma GCC diagnostic pop
 
 QList<QTcpSocket *> server::Sockets;
 
@@ -73,10 +62,8 @@ void server::incomingConnection(qintptr socketDescriptor) {
 void server::slotsReadyRead() {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
-        M_pack m_pack;
-        qInfo() << "Reading data...";
-        QString str = m_pack.unpack(socket->readAll());
-        qInfo() << str;
+        QString str = Mpack::unpack(socket->readAll());
+        qInfo() << "Reading data..." << str;
 
         QString Identifier = str.left(1);
         QStringList parts = str.split(",");
