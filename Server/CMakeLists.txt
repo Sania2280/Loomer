@@ -14,7 +14,7 @@ target_link_libraries(Server
     PRIVATE
         Qt6::Core
         Qt6::Network
-        msgpack-cxx
+        Core
 )
 
 # Устанавливаем путь для конфигурационного файла

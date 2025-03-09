@@ -14,7 +14,7 @@ target_link_libraries(ClientDesktop
     PRIVATE
         Qt6::Widgets
         Qt6::Network
-        msgpack-cxx
+        Core
 )
 
 # Устанавливаем путь для конфигурационного файла

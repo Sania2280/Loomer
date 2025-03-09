@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "config.h"
-#include "m_pack.h"
+
+#include "Mpack.hpp"
+
 #include "customwidgetitem.h"
 #include "getpath.h"
 
@@ -15,14 +17,9 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
-#include <msgpack.hpp>
-
 #include "enums.h"
 
-
 Config::Settings Config::settings;
-
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -68,7 +65,7 @@ void MainWindow::onConnected() {
     qDebug() << "Connected to Server";
 }
 
-void MainWindow::onError(QAbstractSocket::SocketError error) {
+void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
     if(Close_Window_stat)return;
 
     qWarning() << "Error connect to Server:" << socket->errorString();
@@ -90,8 +87,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    M_pack msg_p;
-    QString str = msg_p.unpack(socket->readAll());
+    const QString str = Mpack::unpack(socket->readAll());
     QStringList parts = str.split(",");
     int messType = parts[0].toInt();
 
@@ -144,14 +140,17 @@ void MainWindow::slotReadyRead() {
             ui->listWidget_2->scrollToBottom();
             break;
         }
+        default:
+        {
+            qFatal() << "void MainWindow::slotReadyRead. unknow messType";
+        }
     }
 
 }
 
 void MainWindow::SendToServer(const QString &str) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        M_pack m_pack;
-        socket->write(m_pack.puck(str).data());
+        socket->write(Mpack::puck(str).data());
         qDebug() << socket;
     } else {
         qDebug() << "Socket not connected";
@@ -204,9 +203,9 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
     ui->lineEdit->setFocus();
 
     for(int i = 0; i < ui->listWidget->count(); i++){
-        QListWidgetItem *item = ui->listWidget->item(i);
-        if(item->text() == num)item->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
-        else item->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
+        QListWidgetItem *itemLocal = ui->listWidget->item(i);
+        if(itemLocal->text() == num)itemLocal->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
+        else itemLocal->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
     }
 }
 
@@ -216,10 +215,10 @@ void MainWindow::Socket_print() {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
-            QListWidgetItem *item =
+            QListWidgetItem *itemlocal =
                 new QListWidgetItem(QIcon("./images/user.png"), i);
             ui->listWidget->setIconSize(QSize(25, 25));
-            ui->listWidget->addItem(item);
+            ui->listWidget->addItem(itemlocal);
         }
     }
 }
@@ -275,28 +274,9 @@ void Config::Read() {
     }
 
     QJsonObject config_obj = config_json.object();
+    const QJsonObject objectSettings = config_obj.value("Settings").toObject();
 
-    Config::settings.server_ip =
-        config_obj.value("Settings").toObject().value("server-ip").toString();
-    Config::settings.server_port =
-        config_obj.value("Settings").toObject().value("server-port").toInt();
+    Config::settings.server_ip = objectSettings.value("server-ip").toString();
+    Config::settings.server_port = static_cast<qint16>(objectSettings.value("server-port").toInt());
 
 }
-
-QString M_pack::unpack(QByteArray rawData) {
-
-    msgpack::object_handle oh = msgpack::unpack(rawData.constData(), rawData.size());
-    msgpack::object obj = oh.get();
-    QString data = QString::fromStdString(obj.as<std::string>());
-    return data;
-}
-
-std::string M_pack::puck(QString rawData){
-
-    std::string msg = rawData.toStdString();
-    msgpack::sbuffer buffer;
-    msgpack::pack(buffer, msg);
-    return std::string(buffer.data(), buffer.size());
-}
-
-
