@@ -52,6 +52,8 @@ QString ClienDataBase::LogIn(QString nick, QString pass)
             }
         }
     }
+
+    return "";
 }
 
 bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
@@ -122,6 +124,13 @@ int ClienDataBase::ClientID(QJsonObject database)
 
     int randomID = distrib(gen);
 
-    if(database.contains(QString::number(randomID))) ClientID(database);
-    else return randomID;
+    if(database.contains(QString::number(randomID)))
+    {
+        ClientID(database);
+    }
+    else
+    {
+        return randomID;
+    }
+    return -1;
 }

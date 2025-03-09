@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
 
-    UserData& userdata = UserData::getInstance();
+    // UserData& userdata = UserData::getInstance();
 
     RegWindow* regwindow = new RegWindow();
     regwindow->show();
