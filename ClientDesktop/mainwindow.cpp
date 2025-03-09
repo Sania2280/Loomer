@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "config.h"
+
 #include "Mpack.hpp"
+
 #include "customwidgetitem.h"
 #include "getpath.h"
 
@@ -85,8 +87,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    Mpack msg_p;
-    QString str = msg_p.unpack(socket->readAll());
+    const QString str = Mpack::unpack(socket->readAll());
     QStringList parts = str.split(",");
     int messType = parts[0].toInt();
 
@@ -149,8 +150,7 @@ void MainWindow::slotReadyRead() {
 
 void MainWindow::SendToServer(const QString &str) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        Mpack m_pack;
-        socket->write(m_pack.puck(str).data());
+        socket->write(Mpack::puck(str).data());
         qDebug() << socket;
     } else {
         qDebug() << "Socket not connected";

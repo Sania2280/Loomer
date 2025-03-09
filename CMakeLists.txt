@@ -16,12 +16,6 @@ set(CMAKE_AUTORCC ON)
 
 set(MSGPACK_USE_BOOST OFF) #Disable use boost
 
-FetchContent_Declare(
-    msgpack-cxx
-    GIT_REPOSITORY https://github.com/msgpack/msgpack-c.git
-    GIT_TAG        cpp-7.0.0)
-FetchContent_MakeAvailable(msgpack-cxx)
-
 add_compile_options(
     -fno-extended-identifiers
     -fstrict-aliasing
@@ -46,5 +40,12 @@ add_compile_options(
     -Wnull-dereference
 )
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr")
+endif()
+
+add_subdirectory(Core)
+
 add_subdirectory(ClientDesktop)
 add_subdirectory(Server)
+
