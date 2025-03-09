@@ -32,8 +32,10 @@ void Config::Load()
 
     settings.config_obj = config_json.object();
 
-    QString server_channel_string = settings.config_obj.value("Settings").toObject().value("host-adres").toString();
-    settings.server_port = settings.config_obj.value("Settings").toObject().value("server-port").toInt();
+    const QJsonObject objectSettings = settings.config_obj.value("Settings").toObject();
+
+    QString server_channel_string = objectSettings.value("host-adres").toString();
+    settings.server_port = static_cast<qint16>(objectSettings.value("server-port").toInt());
 
 
     if(server_channel_string == "Any")

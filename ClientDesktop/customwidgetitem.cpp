@@ -27,7 +27,7 @@ CustomListItem::CustomListItem(const QString &text, QWidget *parent)
 
 }
 
-void CustomListItem::paintEvent(QPaintEvent *event)
+void CustomListItem::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter painter(this);
     QStyleOption opt;

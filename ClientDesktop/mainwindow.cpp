@@ -13,7 +13,16 @@
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #include <msgpack.hpp>
+
+#pragma GCC diagnostic pop
 
 #include "enums.h"
 
@@ -87,7 +96,7 @@ void MainWindow::onConnected() {
     qDebug() << "Connected to Server";
 }
 
-void MainWindow::onError(QAbstractSocket::SocketError error) {
+void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
     if(Close_Window_stat)return;
 
     qWarning() << "Error connect to Server:" << socket->errorString();
@@ -163,6 +172,10 @@ void MainWindow::slotReadyRead() {
             ui->listWidget_2->scrollToBottom();
             break;
         }
+        default:
+        {
+            qFatal() << "void MainWindow::slotReadyRead. unknow messType";
+        }
     }
 
 }
@@ -225,9 +238,9 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
     ui->lineEdit->setFocus();
 
     for(int i = 0; i < ui->listWidget->count(); i++){
-        QListWidgetItem *item = ui->listWidget->item(i);
-        if(item->text() == num)item->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
-        else item->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
+        QListWidgetItem *itemLocal = ui->listWidget->item(i);
+        if(itemLocal->text() == num)itemLocal->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
+        else itemLocal->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
     }
 }
 
@@ -237,10 +250,10 @@ void MainWindow::Socket_print() {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
-            QListWidgetItem *item =
+            QListWidgetItem *itemlocal =
                 new QListWidgetItem(QIcon("./images/user.png"), i);
             ui->listWidget->setIconSize(QSize(25, 25));
-            ui->listWidget->addItem(item);
+            ui->listWidget->addItem(itemlocal);
         }
     }
 }
@@ -275,6 +288,5 @@ QString MainWindow::Style_Sheete() {
 
     return res;
 }
-
 
 
