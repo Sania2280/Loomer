@@ -6,9 +6,8 @@
 
 #include "sending.h"
 #include "enums.h"
-#include "m_pack.h"
 
-#include <msgpack.hpp>
+#include "Mpack.hpp"
 
 QMutex mutex1;
 
@@ -87,8 +86,7 @@ void Sending::sendToSocket(QTcpSocket *socket, const QString &message) {
         return;
     }
 
-    M_pack m_pack;
-    socket->write(m_pack.puck(message).data());
+    socket->write(Mpack::puck(message).data());
     socket->flush();
 
     qInfo()<<"mesage" << message;

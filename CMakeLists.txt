@@ -22,5 +22,29 @@ FetchContent_Declare(
     GIT_TAG        cpp-7.0.0)
 FetchContent_MakeAvailable(msgpack-cxx)
 
+add_compile_options(
+    -fno-extended-identifiers
+    -fstrict-aliasing
+    -Wall
+    -Wextra
+    -Werror
+    -Wno-comment
+    -Wdouble-promotion
+    -Wswitch-default
+    -Wswitch-enum
+    -Wuninitialized
+    -Wstrict-aliasing
+    -Wfloat-equal
+    -Wshadow
+    -Wplacement-new
+    -Wcast-align
+    -Wconversion
+    -Wlogical-op
+    -Wduplicated-cond
+    -Wduplicated-branches
+    -Wrestrict
+    -Wnull-dereference
+)
+
 add_subdirectory(ClientDesktop)
 add_subdirectory(Server)
