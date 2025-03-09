@@ -17,6 +17,30 @@ target_link_libraries(Server
         msgpack-cxx
 )
 
+target_compile_options(ClientDesktop
+    PRIVATE
+        -fno-extended-identifiers
+        -fstrict-aliasing
+        -Wall
+        -Wextra
+        -Werror
+        -Wno-comment
+        -Wdouble-promotion
+        -Wswitch-default
+        -Wswitch-enum
+        -Wuninitialized
+        -Wstrict-aliasing
+        -Wfloat-equal
+        -Wshadow -Wplacement-new
+        -Wcast-align
+        -Wconversion
+        -Wlogical-op
+        -Wduplicated-cond
+        -Wduplicated-branches
+        -Wrestrict
+        -Wnull-dereference
+)
+
 # Устанавливаем путь для конфигурационного файла
 configure_file(config.json ${CMAKE_BINARY_DIR}/bin/config.json COPYONLY)
 
