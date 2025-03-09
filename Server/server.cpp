@@ -11,12 +11,10 @@
 #include "cliendatabase.h"
 
 
-#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QCoreApplication>
-#include <QDir>
 
 #include <msgpack.hpp>
 
@@ -27,11 +25,6 @@ QList<QTcpSocket *> server::Sockets;
 QMutex server::mutex;
 
 server::server(const Config::Settings& aSettings) {
-
-    qInstallMessageHandler(Loger::myLogMessageHandler);
-    // Install custom message pattern
-    qSetMessagePattern("%{time yyyy-MM-dd hh:mm:ss,zzz} [%{type}] [%{line}] [%{file}]: %{message}");
-
     if (this->listen(aSettings.server_channel, aSettings.server_port)) {
         qDebug() << "Server started on port 2323";
     } else {
@@ -132,22 +125,3 @@ void server::slotsReadyRead() {
         }
     }
 }
-
-void Loger::myLogMessageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg){
-     QString formattedMsg = qFormatLogMessage(type, context, msg) + "\n";
-
-     // Записываем в файл
-     QFile logFile("app.log");
-     if (logFile.open(QIODevice::WriteOnly | QIODevice::Append))
-     {
-         logFile.write(qUtf8Printable(formattedMsg));
-     }
-
-     // Выводим в консоль
-     fprintf(stderr, "%s", qUtf8Printable(formattedMsg));
-     fflush(stderr);
-}
-
-
-
-

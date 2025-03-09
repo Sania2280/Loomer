@@ -38,12 +38,4 @@ signals:
     void sendingMesage(QTcpSocket *socket, const QString &message);
 };
 
-
-
-class Loger{
-public:
-    static void myLogMessageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg);
-
-};
-
 #endif // SERVER_H
