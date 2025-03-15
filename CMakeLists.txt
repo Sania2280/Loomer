@@ -16,11 +16,64 @@ set(CMAKE_AUTORCC ON)
 
 set(MSGPACK_USE_BOOST OFF) #Disable use boost
 
-FetchContent_Declare(
-    msgpack-cxx
-    GIT_REPOSITORY https://github.com/msgpack/msgpack-c.git
-    GIT_TAG        cpp-7.0.0)
-FetchContent_MakeAvailable(msgpack-cxx)
+add_compile_options(
+    -fno-extended-identifiers
+    -fstrict-aliasing
+    -Wall
+    -Wextra
+    -Werror
+    -Wno-comment
+    -Wdouble-promotion
+    -Wswitch-default
+    -Wswitch-enum
+    -Wuninitialized
+    -Wstrict-aliasing
+    -Wfloat-equal
+    -Wshadow
+    -Wplacement-new
+    -Wcast-align
+    -Wconversion
+    -Wlogical-op
+    -Wduplicated-cond
+    -Wduplicated-branches
+    -Wrestrict
+    -Wnull-dereference
+)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr")
+endif()
+
+add_subdirectory(Core)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr")
+endif()
+
+add_compile_options(
+    -fno-extended-identifiers
+    -fstrict-aliasing
+    -Wall
+    -Wextra
+    -Werror
+    -Wno-comment
+    -Wdouble-promotion
+    -Wswitch-default
+    -Wswitch-enum
+    -Wuninitialized
+    -Wstrict-aliasing
+    -Wfloat-equal
+    -Wshadow
+    -Wplacement-new
+    -Wcast-align
+    -Wconversion
+    -Wlogical-op
+    -Wduplicated-cond
+    -Wduplicated-branches
+    -Wrestrict
+    -Wnull-dereference
+)
 
 add_subdirectory(ClientDesktop)
 add_subdirectory(Server)
+

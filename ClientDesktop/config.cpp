@@ -26,9 +26,9 @@ void Config::Read() {
 
     QJsonObject config_obj = config_json.object();
 
-    Config::settings.server_ip =
-        config_obj.value("Settings").toObject().value("server-ip").toString();
-    Config::settings.server_port =
-        config_obj.value("Settings").toObject().value("server-port").toInt();
+    const auto SettingsObj = config_obj.value("Settings").toObject();
+
+    Config::settings.server_ip = SettingsObj.value("server-ip").toString();
+    Config::settings.server_port = static_cast<qint16>(SettingsObj.value("server-port").toInt());
 
 }

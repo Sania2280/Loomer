@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "config.h"
-#include "m_pack.h"
+
+#include "Mpack.hpp"
+
 #include "customwidgetitem.h"
 #include "getpath.h"
 #include "UserData.h"
@@ -11,16 +13,11 @@
 #include <QDir>
 #include <QTimer>
 
-
-
-#include <msgpack.hpp>
+#include "Mpack.hpp"
 
 #include "enums.h"
 
-
 Config::Settings Config::settings;
-
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -87,7 +84,7 @@ void MainWindow::onConnected() {
     qDebug() << "Connected to Server";
 }
 
-void MainWindow::onError(QAbstractSocket::SocketError error) {
+void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
     if(Close_Window_stat)return;
 
     qWarning() << "Error connect to Server:" << socket->errorString();
@@ -109,8 +106,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    M_pack msg_p;
-    QString str = msg_p.unpack(socket->readAll());
+    const QString str = Mpack::unpack(socket->readAll());
     QStringList parts = str.split(",");
     int messType = parts[0].toInt();
 
@@ -154,14 +150,17 @@ void MainWindow::slotReadyRead() {
             ui->listWidget_2->scrollToBottom();
             break;
         }
+        default:
+        {
+            qFatal() << "void MainWindow::slotReadyRead. unknow messType";
+        }
     }
 
 }
 
 void MainWindow::SendToServer(const QString &str) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        M_pack m_pack;
-        socket->write(m_pack.puck(str).data());
+        socket->write(Mpack::puck(str).data());
         qDebug() << socket;
     } else {
         qDebug() << "Socket not connected";
@@ -170,7 +169,7 @@ void MainWindow::SendToServer(const QString &str) {
 
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
-    UserData& userdata = UserData::getInstance();
+    // UserData& userdata = UserData::getInstance();
 
     QString message = QString("%1,%2,%3,%4")
     .arg(MESAGE)
@@ -216,9 +215,9 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
     ui->lineEdit->setFocus();
 
     for(int i = 0; i < ui->listWidget->count(); i++){
-        QListWidgetItem *item = ui->listWidget->item(i);
-        if(item->text() == num)item->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
-        else item->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
+        QListWidgetItem *itemLocal = ui->listWidget->item(i);
+        if(itemLocal->text() == num)itemLocal->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
+        else itemLocal->setBackground(Qt::NoBrush); // Сбрасывает цвет фона
     }
 }
 
@@ -228,10 +227,10 @@ void MainWindow::Socket_print() {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
-            QListWidgetItem *item =
+            QListWidgetItem *itemlocal =
                 new QListWidgetItem(QIcon("./images/user.png"), i);
             ui->listWidget->setIconSize(QSize(25, 25));
-            ui->listWidget->addItem(item);
+            ui->listWidget->addItem(itemlocal);
         }
     }
 }
@@ -266,6 +265,3 @@ QString MainWindow::Style_Sheete() {
 
     return res;
 }
-
-
-

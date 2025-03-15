@@ -5,13 +5,11 @@
 #include "m_pack.h"
 #include "ui_RegWindow.h"
 
-
 #include <QTcpSocket>
 #include <winsock.h>
 #include <QTimer>
+#include "Mpack.hpp"
 
-
-M_pack m_pack;
 
 extern UserData &userData ;
 
@@ -55,7 +53,7 @@ void ServerConnector::SendMyData(int status)
         .arg(userData.name)
         .arg(userData.pass);
 
-        socket->write(QByteArray::fromStdString(m_pack.puck(message)));
+        socket->write(QByteArray::fromStdString(Mpack::puck(message)));
 
     if (!socket->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << socket->errorString();
@@ -70,8 +68,7 @@ void ServerConnector::slotReadyRead()
     UserData& userdata = UserData::getInstance();
 
     if(userdata.mainWindStarted != true){
-        M_pack msg_p;
-        QString str = msg_p.unpack(socket->readAll());
+        QString str = Mpack::unpack(socket->readAll());
         QStringList parts = str.split(",");
 
         qDebug() << str;

@@ -7,19 +7,16 @@
 #include "sending.h"
 #include "enums.h"
 #include "Config.hpp"
-#include "m_pack.h"
 #include "cliendatabase.h"
 
+#include "Mpack.hpp"
 
-#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QCoreApplication>
-#include <QDir>
 
-#include <msgpack.hpp>
-
+#include "Mpack.hpp"
 
 QList<QTcpSocket *> server::Sockets;
 
@@ -27,11 +24,6 @@ QList<QTcpSocket *> server::Sockets;
 QMutex server::mutex;
 
 server::server(const Config::Settings& aSettings) {
-
-    qInstallMessageHandler(Loger::myLogMessageHandler);
-    // Install custom message pattern
-    qSetMessagePattern("%{time yyyy-MM-dd hh:mm:ss,zzz} [%{type}] [%{line}] [%{file}]: %{message}");
-
     if (this->listen(aSettings.server_channel, aSettings.server_port)) {
         qDebug() << "Server started on port 2323";
     } else {
@@ -72,10 +64,8 @@ void server::incomingConnection(qintptr socketDescriptor) {
 void server::slotsReadyRead() {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
-        M_pack m_pack;
-        qInfo() << "Reading data...";
-        QString str = m_pack.unpack(socket->readAll());
-        qInfo() << str;
+        QString str = Mpack::unpack(socket->readAll());
+        qInfo() << "Reading data..." << str;
 
         QString Identifier = str.left(1);
         QStringList parts = str.split(",");
@@ -158,22 +148,3 @@ void server::slotsReadyRead() {
         }
     }
 }
-
-void Loger::myLogMessageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg){
-     QString formattedMsg = qFormatLogMessage(type, context, msg) + "\n";
-
-     // Записываем в файл
-     QFile logFile("app.log");
-     if (logFile.open(QIODevice::WriteOnly | QIODevice::Append))
-     {
-         logFile.write(qUtf8Printable(formattedMsg));
-     }
-
-     // Выводим в консоль
-     fprintf(stderr, "%s", qUtf8Printable(formattedMsg));
-     fflush(stderr);
-}
-
-
-
-

@@ -62,9 +62,17 @@ QString ClienDataBase::LogIn(QString nick, QString pass)
         }
     }
 
-    if(nickCounter == false) {return "LOGIN_FAIL_NAME";}
-    else if (passCounter == false) {return "LOGIN_FAIL_PASS";}
-    else {return desckriptor;}
+
+    if(nickCounter == false) {
+      return "LOGIN_FAIL_NAME";
+    }
+    else if (passCounter == false) {
+      return "LOGIN_FAIL_PASS";
+    }
+    else {
+      return desckriptor;
+    }
+
 
 
 }
@@ -137,6 +145,11 @@ int ClienDataBase::ClientID(QJsonObject database)
 
     int randomID = distrib(gen);
 
-    if(database.contains(QString::number(randomID))) return ClientID(database);
-    else return randomID;
+    if(database.contains(QString::number(randomID))) {
+      return ClientID(database);
+    }
+    else {
+      return randomID;
+    }
+
 }
