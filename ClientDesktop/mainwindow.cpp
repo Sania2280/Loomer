@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
 
-    setWindowTitle(MySocket + " / " + userdata.name);
+    setWindowTitle(userdata.name + " / " + MySocket);
 
     QIcon buton_icon("./images/send.png");
     ui->pushButton->setIcon(buton_icon);
@@ -111,15 +111,6 @@ void MainWindow::slotReadyRead() {
     int messType = parts[0].toInt();
 
     switch (messType) {
-
-        case ID_MY: // my_identifier
-        {
-            // MySocket = parts[2];
-            QString num = parts[2];
-            setWindowTitle(num);
-            qDebug() << "My socket" << MySocket;
-            break;
-        }
 
         case ID_CLIENT: // the_identifier
         {

@@ -1,10 +1,12 @@
-#include "RegWindow.h"
+#include "regwindow.h"
 #include "ui_RegWindow.h"
 #include "UserData.h"
 #include "enums.h"
 #include "ServerConnector.h"
 
+
 #include<QFile>
+#include <qtimer.h>
 
 
 ServerConnector  serverConnector;
@@ -21,18 +23,20 @@ RegWindow::RegWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
     QIcon retrun_buton_icon("./images/Return_buton.png");
-    this->ui->pushButton_return->setIcon(retrun_buton_icon);
 
-    this->ui->label->setText("Log In in your account or create new one");
+    ui->pushButton_return->setIcon(retrun_buton_icon);
+    ui->label->setText("Log In in your account or create new one");
+    ui->lineEdit_name->setPlaceholderText("Write name...");
+    ui->lineEdit_pass->setPlaceholderText("Write pass...");
 
     StartUpWindow();
 
     serverConnector->ConnectToServer();
+
     connect(this, &RegWindow::CloseWindow, this,[this](){
         userData.mainWindStarted = true;
         this->close();
     });
-
 
 }
 
@@ -40,6 +44,7 @@ RegWindow::~RegWindow()
 {
     delete ui;
 }
+
 
 void RegWindow::StartUpWindow()
 {
@@ -102,6 +107,7 @@ void RegWindow::ShowMainForm()
 void RegWindow::on_pushButton_return_clicked()
 {
     StartUpWindow();
+    ui->listWidget_errors->clear();
 }
 
 
@@ -119,12 +125,8 @@ void RegWindow::on_pushButton_end_clicked()
     }
     else if (userData.status == RegWind::SIGN) {
         STATUS = SIGN;
+        serverConnector->SendMyData(STATUS);
     }
-
-
-    // if (userData.getSocket() != nullptr){
-    //     this->close();
-    // }
 
 }
 

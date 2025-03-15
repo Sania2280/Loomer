@@ -14,7 +14,7 @@ public:
 
     void CreateateDB();
     QString LogIn(QString nick, QString pass);
-    bool SingUp(QString nick, QString pass, QTcpSocket* socket);
+    QString SingUp(QString nick, QString pass, QTcpSocket* socket);
 
     int ClientID(QJsonObject database);
 

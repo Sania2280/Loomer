@@ -17,17 +17,28 @@ public:
     void ConnectToServer();
     void SendMyData(int status);
 
+
+
 private:
     QTcpSocket *socket;
     RegWindow *regWind;
+    bool Close_Window_stat = false;
 
 
 
 signals:
     void socketConnected();         // Сигнал о подключении
 
+public slots:
+
+    void SetUpConnection();
+
 private slots:
     void slotReadyRead();           // Слот для чтения данных из сокета
+
+    void onConnected();
+    void onError(QAbstractSocket::SocketError error);
+    void onDisconnected();
 
 };
 
