@@ -107,25 +107,51 @@ void server::slotsReadyRead() {
         else if(messageType == LOG){
 
             ClienDataBase clientDB;
-            QString desckriptor = clientDB.LogIn(parts[1], parts[2]);
+            QString logInFlag = clientDB.LogIn(parts[1], parts[2]);
 
-            QString message = QString("%1,%2")
-                                  .arg(LOGIN_SEC)
-                                  .arg(socket->socketDescriptor());
+            if(logInFlag != "LOGIN_FAIL_NAME" && logInFlag != "LOGIN_FAIL_PASS"){
+                QString message = QString("%1,%2")
+                                      .arg(LOGIN_SEC)
+                                      .arg(socket->socketDescriptor());
 
+                qDebug() << "New desk: " << socket->socketDescriptor();
 
-            qDebug() << "New desk: " << socket->socketDescriptor();
+                emit sendingMesage(socket, message);
+            }
+            else if(logInFlag == "LOGIN_FAIL_NAME"){
+                QString message = QString("%1")
+                .arg(LOGIN_FAIL_NAME);
 
-            emit sendingMesage(socket, message);
+                qInfo() << "Log in fail NAME: " << socket->socketDescriptor();
+                emit sendingMesage(socket, message);
+            }
+            else if(logInFlag == "LOGIN_FAIL_PASS"){
+                QString message = QString("%1")
+                .arg(LOGIN_FAIL_PASS);
+
+                qDebug() << "Log in fail PASS : " << socket->socketDescriptor();
+                emit sendingMesage(socket, message);
+            }
         }
         else if(messageType == SIGN){
-
             ClienDataBase clientDB;
-            bool desckriptor = clientDB.SingUp(parts[1], parts[2], socket);
+            QString sginUpFlag = clientDB.SingUp(parts[1], parts[2], socket);
 
-            QString message = QString("%1,%2")
-                                  .arg(SIGN_SEC)
-                                  .arg(desckriptor);
+            if(sginUpFlag == "SIGN_SEC"){
+            QString message = QString("%1")
+                                   .arg(SIGN_SEC);
+                emit sendingMesage(socket, message);
+            }
+            else if(sginUpFlag == "SIGN_FAIL"){
+                QString message = QString("%1")
+                                    .arg(SIGN_FAIL);
+                emit sendingMesage(socket, message);
+            }
+            else if(sginUpFlag == "SIGN_FAIL_EXIST"){
+                QString message = QString("%1")
+                .arg(SIGN_FAIL_EXIST);
+                emit sendingMesage(socket, message);
+            }
         }
         else if(messageType == CLIENT_READY_TO_WORCK){
             emit newClientConnected(socket, Sockets);

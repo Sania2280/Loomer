@@ -15,7 +15,6 @@ CustomListItem::CustomListItem(const QString &text, QWidget *parent)
 
     Get_My_Path get_my_path;
 
-
     label->setStyleSheet(Style_Sheete());
     label->adjustSize();
 

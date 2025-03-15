@@ -5,8 +5,6 @@
 #include <QLabel>
 #include <QHBoxLayout>
 
-#include "enums.h"
-
 class CustomListItem : public QWidget
 {
     Q_OBJECT
