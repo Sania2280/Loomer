@@ -8,6 +8,7 @@
 #include "enums.h"
 #include "Config.hpp"
 #include "cliendatabase.h"
+#include"message.h"
 
 #include "Mpack.hpp"
 
@@ -64,60 +65,108 @@ void server::incomingConnection(qintptr socketDescriptor) {
 void server::slotsReadyRead() {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
-        QString str = Mpack::unpack(socket->readAll());
-        qInfo() << "Reading data..." << str;
 
-        QString Identifier = str.left(1);
-        QStringList parts = str.split(",");
-        int messageType = parts[0].toInt();
+        qInfo() << "Reading data...";
+        Message message = Mpack::unpack(socket->readAll().toStdString());
 
-        if (messageType == MESAGE) {
+        if (message.id == MesageIdentifiers::MESAGE) {
             QTcpSocket *RESIVER = nullptr; // Указатель на сокет получателя
             QTcpSocket *SENDER = nullptr; // Указатель на сокет отправителя
-            QString TEXT = parts[3];
+            // QString TEXT = parts[3];
 
             for (int i = 0; i < Sockets.size(); ++i) {
-                if (Sockets[i]->socketDescriptor() == parts[1].toLongLong())
+                if (Sockets[i]->socketDescriptor() == std::stoll(message.messageData.resivDesk)){
                     RESIVER = Sockets[i];
-                if (Sockets[i]->socketDescriptor() == parts[2].toLongLong())
+                }
+                if (Sockets[i]->socketDescriptor() == std::stoll(message.messageData.senderDesk)){
                     SENDER = Sockets[i];
+                }
             }
 
             QByteArray data;
             QDataStream out(&data, QIODevice::WriteOnly);
-            out.setVersion(QDataStream::Qt_6_0);
-            QString message = QString("%1,%2,%3,%4")
-                                  .arg(MESAGE)
-                                  .arg(QString::number(RESIVER->socketDescriptor()))
-                                  .arg(QString::number(SENDER->socketDescriptor()))
-                                  .arg(TEXT);
-            out << message;
+            out.setVersion(QDataStream::Qt_6_0);      
+
+            Message messToSend;
+            messToSend.id = MesageIdentifiers::MESAGE;
+            messToSend.messageData.senderDesk = SENDER->socketDescriptor();
+
             emit sendingMesage(RESIVER, message);
         }
-        else if(messageType == LOG){
+        else if(message.id == MesageIdentifiers::LOG){
 
             ClienDataBase clientDB;
-            QString desckriptor = clientDB.LogIn(parts[1], parts[2]);
+            MesageIdentifiers logInFlag = clientDB.LogIn(QString::fromStdString(message.registrationData.nickName),
+                                               QString::fromStdString(message.registrationData.pass));
 
-            QString message = QString("%1,%2")
-                                  .arg(LOGIN_SEC)
-                                  .arg(socket->socketDescriptor());
+            if(logInFlag != MesageIdentifiers::LOGIN_FAIL_NAME && logInFlag != MesageIdentifiers::LOGIN_FAIL_PASS){
+                // QString message = QString("%1,%2")
+                //                       .arg(LOGIN_SEC)
+                //                       .arg(socket->socketDescriptor());
 
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::LOGIN_SEC;
+                messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
 
-            qDebug() << "New desk: " << socket->socketDescriptor();
+                qDebug() << "New desk: " << socket->socketDescriptor();
 
-            emit sendingMesage(socket, message);
+                emit sendingMesage(socket, messToSend);
+            }
+            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_NAME){
+                // QString message = QString("%1")
+                // .arg(LOGIN_FAIL_NAME);
+
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::LOGIN_FAIL_NAME;
+
+                qInfo() << "Log in fail NAME: " << message.registrationData.nickName;
+                emit sendingMesage(socket, messToSend);
+            }
+            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_PASS){
+                // QString message = QString("%1")
+                // .arg(LOGIN_FAIL_PASS);
+
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::LOGIN_FAIL_PASS;
+
+                qDebug() << "Log in fail PASS : " << socket->socketDescriptor();
+                emit sendingMesage(socket, messToSend);
+            }
         }
-        else if(messageType == SIGN){
-
+        else if(message.id == MesageIdentifiers::SIGN){
             ClienDataBase clientDB;
-            bool desckriptor = clientDB.SingUp(parts[1], parts[2], socket);
+            MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nickName),
+                                                           QString::fromStdString(message.registrationData.pass),
+                                                           socket->socketDescriptor());
 
-            QString message = QString("%1,%2")
-                                  .arg(SIGN_SEC)
-                                  .arg(desckriptor);
+            if(sginUpFlag == MesageIdentifiers::SIGN_SEC){
+            // QString message = QString("%1")
+            //                        .arg(SIGN_SEC);
+
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::SIGN_SEC;
+
+                emit sendingMesage(socket, messToSend);
+            }
+            else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL){
+                // QString message = QString("%1")
+                //                     .arg(SIGN_FAIL);
+
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::SIGN_FAIL;
+
+                emit sendingMesage(socket, messToSend);
+            }
+            else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL_EXIST){
+                // QString message = QString("%1")
+                // .arg(SIGN_FAIL_EXIST);
+
+                Message messToSend;
+                messToSend.id = MesageIdentifiers::SIGN_FAIL_EXIST;
+                emit sendingMesage(socket, messToSend);
+            }
         }
-        else if(messageType == CLIENT_READY_TO_WORCK){
+        else if(message.id== MesageIdentifiers::CLIENT_READY_TO_WORCK){
             emit newClientConnected(socket, Sockets);
         }
     }

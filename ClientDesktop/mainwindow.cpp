@@ -7,6 +7,7 @@
 #include "customwidgetitem.h"
 #include "getpath.h"
 #include "UserData.h"
+#include "message.h"
 
 #include <QListWidget>
 #include <QStringBuilder>
@@ -38,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
 
-    setWindowTitle(MySocket + " / " + userdata.name);
+    setWindowTitle(userdata.name + " / " + MySocket);
 
     QIcon buton_icon("./images/send.png");
     ui->pushButton->setIcon(buton_icon);
@@ -55,11 +56,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
 
-    QString message = QString("%1,%2")
-                          .arg(CLIENT_READY_TO_WORCK)
-                          .arg(MySocket);
+    Message messToSend;
 
-    SendToServer(message);
+    messToSend.id = MesageIdentifiers::CLIENT_READY_TO_WORCK;
+    messToSend.messageData.senderDesk = MySocket.toStdString();
+
+    // QString message = QString("%1,%2")
+    //                       .arg(CLIENT_READY_TO_WORCK)
+    //                       .arg(MySocket);
+
+    // SendToServer(message);
 
 }
 
@@ -106,42 +112,30 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    const QString str = Mpack::unpack(socket->readAll());
-    QStringList parts = str.split(",");
-    int messType = parts[0].toInt();
 
-    switch (messType) {
+    Message message = Mpack::unpack(socket->readAll().toStdString());
 
-        case ID_MY: // my_identifier
+    switch (message.id) {
+
+        case MesageIdentifiers::ID_CLIENT: // the_identifier
         {
-            // MySocket = parts[2];
-            QString num = parts[2];
-            setWindowTitle(num);
-            qDebug() << "My socket" << MySocket;
-            break;
-        }
-
-        case ID_CLIENT: // the_identifier
-        {
-            if (!Sockets.contains(parts[2])) {
-                Sockets.push_back(parts[2]);
+            if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))){
+                Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
                 MainWindow::Socket_print();
             }
-
-            parts.clear();
             break;
         }
 
-        case ID_DELETE: // delete_client;
+        case MesageIdentifiers::ID_DELETE: // delete_client;
         {
-            Sockets.removeAll(parts[2]);
-            MainWindow::Socket_delete(parts[2]);
+            Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
+            MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
             break;
         }
 
-        case MESAGE: // message
+        case MesageIdentifiers::MESAGE: // message
         {
-            CustomListItem *widget = new CustomListItem(parts[3]);
+            CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
             QWidget *container = new QWidget;
             QHBoxLayout *layout = new QHBoxLayout(container);
 
@@ -167,9 +161,11 @@ void MainWindow::slotReadyRead() {
 
 }
 
-void MainWindow::SendToServer(const QString &str) {
+void MainWindow::SendToServer(Message &message) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        socket->write(Mpack::puck(str).data());
+
+        socket->write(Mpack::puck(message).data());
+
         qDebug() << socket;
     } else {
         qDebug() << "Socket not connected";
@@ -180,11 +176,18 @@ void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
     // UserData& userdata = UserData::getInstance();
 
-    QString message = QString("%1,%2,%3,%4")
-    .arg(MESAGE)
-        .arg(Interlocutor)
-        .arg(MySocket)
-        .arg(ui->lineEdit->text());
+    // QString message = QString("%1,%2,%3,%4")
+    // .arg(MESAGE)
+    //     .arg(Interlocutor)
+    //     .arg(MySocket)
+    //     .arg(ui->lineEdit->text());
+
+    Message message;
+    message.id = MesageIdentifiers::MESAGE;
+    message.messageData.resivDesk = Interlocutor.toStdString();
+    message.messageData.senderDesk = MySocket.toStdString();
+    message.messageData.message = ui->lineEdit->text().toStdString();
+
 
     CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
     QWidget *container = new QWidget;
@@ -219,7 +222,7 @@ void MainWindow::on_pushButton_clicked() { on_lineEdit_returnPressed(); }
 void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 {
     QString num = item->text();
-     item->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
+    item->setBackground(QBrush(QColor(QColorConstants::Svg::lightblue)));
     Interlocutor = num;
     ui->lineEdit->setFocus();
 

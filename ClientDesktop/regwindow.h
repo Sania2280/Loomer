@@ -2,6 +2,7 @@
 #define REGWINDOW_H
 
 #include <QDialog>
+#include <QTcpSocket>
 
 
 class MainWindow;
@@ -18,6 +19,7 @@ class RegWindow : public QDialog
 
 public:
 
+    Ui::regwindow *ui;
     QString Style_Sheete();
 
     explicit RegWindow(QWidget *parent = nullptr);
@@ -29,13 +31,17 @@ private slots:
     void on_pushButton_end_clicked();
     void on_pushButton_return_clicked();
 
+
+
 private:
-    Ui::regwindow *ui;
     ServerConnector *serverConnector;
 
     void ShowMainForm();
     void StartUpWindow();
 
+    bool Close_Window_stat = false;
+
+    QTcpSocket* socket;
 signals:
     void CloseWindow();
 

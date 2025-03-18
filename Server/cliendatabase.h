@@ -1,5 +1,6 @@
 #ifndef CLIENDATABASE_H
 #define CLIENDATABASE_H
+#include "enums.h"
 #include <qobject.h>
 
 #include <QJsonDocument>
@@ -13,8 +14,8 @@ public:
     explicit ClienDataBase(QObject *parent = nullptr);
 
     void CreateateDB();
-    QString LogIn(QString nick, QString pass);
-    bool SingUp(QString nick, QString pass, QTcpSocket* socket);
+    MesageIdentifiers LogIn(QString nick, QString pass);
+    MesageIdentifiers SingUp(QString nick, QString pass, int descriptor);
 
     int ClientID(QJsonObject database);
 

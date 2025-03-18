@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "message.h"
 #include "qmutex.h"
 #include <QList>
 #include <QTcpServer>
@@ -35,7 +36,7 @@ private:
 signals:
     void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets);
     void disconnectedClient(qintptr socet, QString IP);
-    void sendingMesage(QTcpSocket *socket, const QString &message);
+    void sendingMesage(QTcpSocket *socket, Message &message);
 };
 
 #endif // SERVER_H

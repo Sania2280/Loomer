@@ -1,4 +1,6 @@
 #include "cliendatabase.h"
+#include "enums.h"
+
 #include <random>
 
 ClienDataBase::ClienDataBase(QObject *parent)
@@ -21,7 +23,7 @@ void ClienDataBase::CreateateDB()
     }
 }
 
-QString ClienDataBase::LogIn(QString nick, QString pass)
+MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
 {
     qDebug() << "Log In";
 
@@ -37,26 +39,47 @@ QString ClienDataBase::LogIn(QString nick, QString pass)
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonObject database = doc.object();
 
+    QString desckriptor = "";
+
+    QString persID;
+
+    bool nickCounter = false;
+    bool passCounter = false;
+
     for (const QString &key : database.keys()) {
         QJsonValue value = database.value(key);
         if (!value.isObject())
             continue;
 
         QJsonObject userObj = value.toObject();
-        if (userObj.contains("nick") && userObj.contains("password")) {
-            if (userObj.value("nick").toString() == nick &&
-                userObj.value("password").toString() == pass) {
-                qDebug() << "User found:" << key;
 
-                return key;
+        if(userObj.value("nick").toString() == nick){
+            nickCounter = true;
+            if(userObj.value("password").toString() == pass){
+                passCounter = true;
+                desckriptor = key;
             }
         }
     }
 
-    return "";
+
+    if(nickCounter == false) {
+        return MesageIdentifiers::LOGIN_FAIL_NAME; 
+        qDebug() << "LOGIN_FAIL_NAME";
+    }
+    else if (passCounter == false) {
+        return MesageIdentifiers::LOGIN_FAIL_PASS;
+        qDebug() << "LOGIN_FAIL_PASS";
+    }
+    else {
+        return MesageIdentifiers::LOGIN_SEC;
+        qDebug() << "LOGIN_SEC";
+    }
+
+
 }
 
-bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
+MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descriptor)
 {
     qDebug() << "Sing Up";
 
@@ -68,7 +91,7 @@ bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
         // После создания базы нужно снова открыть файл для чтения
         if (!file.open(QIODevice::ReadOnly)) {
             qWarning() << "Error open DB for reading after creation:";
-            return false;
+            return MesageIdentifiers::SIGN_FAIL;
         }
     }
 
@@ -89,7 +112,7 @@ bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
         if (userObj.contains("nick") && userObj.contains("password")) {
             if (userObj.value("nick").toString() == nick ) {
                 qDebug() << "User already exist" << key;
-                return false;
+                return MesageIdentifiers::SIGN_FAIL_EXIST;
 
               }
         }
@@ -99,7 +122,7 @@ bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
     QJsonObject newUser;
     newUser["nick"] = nick;
     newUser["password"] = pass;
-    newUser["desk"] = QString::number(socket->socketDescriptor());
+    newUser["desk"] = descriptor;
 
     // Добавляем нового пользователя; желательно использовать уникальный ключ
     database[QString::number(ClientID(database))] = newUser;
@@ -108,12 +131,12 @@ bool ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
     // Открываем файл для записи
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << "Error open DB for writing:" << file.errorString();
-        return false;
+        return MesageIdentifiers::SIGN_FAIL;
     }
     file.write(newDoc.toJson(QJsonDocument::Indented));
     file.close();
 
-    return true;
+    return MesageIdentifiers::SIGN_SEC;
 }
 
 int ClienDataBase::ClientID(QJsonObject database)
@@ -124,13 +147,11 @@ int ClienDataBase::ClientID(QJsonObject database)
 
     int randomID = distrib(gen);
 
-    if(database.contains(QString::number(randomID)))
-    {
-        ClientID(database);
+    if(database.contains(QString::number(randomID))) {
+        return ClientID(database);
     }
-    else
-    {
+    else {
         return randomID;
-    }
-    return -1;
+    }   
+
 }

@@ -9,8 +9,7 @@
 #include <QMainWindow>
 
 #include "enums.h"
-#include "getpath.h"
-
+#include "message.h"
 
 
 
@@ -27,7 +26,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QString Get_Path(Directorys file, Files directory);
-    void SendToServer(const QString &str);
+    void SendToServer(Message &message);
 
 private slots:
     void slotReadyRead();

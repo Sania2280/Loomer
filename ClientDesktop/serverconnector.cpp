@@ -1,7 +1,13 @@
 #include "ServerConnector.h"
-#include "RegWindow.h"
+#include "regwindow.h"
 #include "UserData.h"
 #include "config.h"
+
+#include "Mpack.hpp"
+#include "ui_RegWindow.h"
+#include "message.h"
+
+
 
 #include <QTcpSocket>
 #include <winsock.h>
@@ -44,40 +50,109 @@ void ServerConnector::ConnectToServer()
 
 }
 
-void ServerConnector::SendMyData(int status)
+void ServerConnector::SendMyData(MesageIdentifiers status)
 {
-    QString message = QString("%1,%2,%3")
-        .arg(status)
-        .arg(userData.name)
-        .arg(userData.pass);
+    // QString message = QString("%1,%2,%3")
+    //     .arg(status)
+    //     .arg(userData.name)
+    //     .arg(userData.pass);
 
-        socket->write(QByteArray::fromStdString(Mpack::puck(message)));
+
+    Message message;
+    message.id = status;
+    message.registrationData.nickName = userData.name.toStdString();
+    message.registrationData.pass = userData.pass.toStdString();
+
+    socket->write(QByteArray::fromStdString(Mpack::puck(message)));
 
     if (!socket->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << socket->errorString();
     }
 }
 
+
+
 void ServerConnector::slotReadyRead()
 {
+    qDebug() << "Reading...";
 
     UserData& userdata = UserData::getInstance();
 
     if(userdata.mainWindStarted != true){
-        QString str = Mpack::unpack(socket->readAll());
-        QStringList parts = str.split(",");
 
-        qDebug() << str;
+    Message message = Mpack::unpack(socket->readAll().toStdString());
 
-        int messType = parts[0].toInt();
-        if (messType == LOGIN_SEC) {
+        if(message.id == MesageIdentifiers::LOGIN_SEC){
+            qDebug() << "LOGIN_SEC";
+        }
 
-            qDebug()<< "Got desk: " << parts[1];
+        switch (message.id) {
+            case MesageIdentifiers::LOGIN_SEC:{
+                qDebug()<< "Got desk: " << message.registrationData.desckriptor;
+                userdata.desck = QString::fromStdString(message.registrationData.desckriptor);
+                emit regWind->CloseWindow();
+                break;
+                }
+            case MesageIdentifiers::LOGIN_FAIL_NAME:{
+                qDebug() << "Log in faill NAME";
+                regWind->ui->listWidget_errors->clear();
+                regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Name");
+                break;
+            }
+            case MesageIdentifiers::LOGIN_FAIL_PASS:{
+                qDebug() << " Log in faill PASS";
+                regWind->ui->listWidget_errors->clear();
+                regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Password");
+                break;
+            }
+            case MesageIdentifiers::SIGN_SEC:{
+                qDebug() << "Accaaunt created";
+                regWind->ui->listWidget_errors->clear();
+                regWind->ui->listWidget_errors->addItem("Accaunt created succsed");
+            }
+            case MesageIdentifiers::SIGN_FAIL:{
+                qDebug() << "Created accaunt ERROR";
+                regWind->ui->listWidget_errors->clear();
+                regWind->ui->listWidget_errors->addItem("ERROR: Accaunt creation Faild");
+            }
+            case MesageIdentifiers::SIGN_FAIL_EXIST:{
+                qDebug() << "User Exist ERROR";
+                regWind->ui->listWidget_errors->clear();
+                regWind->ui->listWidget_errors->addItem("ERROR: User alredy exist");
+            }
 
-            userdata.desck = parts[1];
-
-            emit regWind->CloseWindow();
         }
 
     }
 }
+
+
+void ServerConnector::SetUpConnection(){
+    // connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
+    // connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);
+    // connect(socket, &QTcpSocket::disconnected, this, &ServerConnector::onDisconnected);
+
+    // socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
+
+}
+
+
+void ServerConnector::onConnected() {
+    qDebug() << "Connected to Server";
+}
+
+void ServerConnector::onError(QAbstractSocket::SocketError error) {
+    if(Close_Window_stat)return;
+
+    qWarning() << "Error connect to Server:" << socket->errorString();
+    // Запускаем повторное подключение через 3 секунды:
+    QTimer::singleShot(3000, this, &::ServerConnector::SetUpConnection);
+}
+
+void ServerConnector::onDisconnected() {
+    if(Close_Window_stat)return;
+
+    qWarning() << "Disconnected from Server. Reconnecting...";
+    QTimer::singleShot(3000, this, &::ServerConnector::SetUpConnection);
+}
+
