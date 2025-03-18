@@ -38,7 +38,7 @@ private slots:
     void slotReadyRead();           // Слот для чтения данных из сокета
 
     void onConnected();
-    void onError(QAbstractSocket::SocketError error);
+    void onError();
     void onDisconnected();
 
 };

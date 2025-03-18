@@ -61,11 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     messToSend.id = MesageIdentifiers::CLIENT_READY_TO_WORCK;
     messToSend.messageData.senderDesk = MySocket.toStdString();
 
-    // QString message = QString("%1,%2")
-    //                       .arg(CLIENT_READY_TO_WORCK)
-    //                       .arg(MySocket);
-
-    // SendToServer(message);
+    SendToServer(messToSend);
 
 }
 
@@ -153,6 +149,18 @@ void MainWindow::slotReadyRead() {
             ui->listWidget_2->scrollToBottom();
             break;
         }
+        case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+        case MesageIdentifiers::NONE:{}
+        case MesageIdentifiers::ID_MY:{}
+        case MesageIdentifiers::LOG:{}
+        case MesageIdentifiers::SIGN:{}
+        case MesageIdentifiers::LOGIN_SEC:{}
+        case MesageIdentifiers::LOGIN_FAIL_PASS:{}
+        case MesageIdentifiers::LOGIN_FAIL_NAME:{}
+        case MesageIdentifiers::SIGN_FAIL:{}
+        case MesageIdentifiers::SIGN_SEC:{}
+        case MesageIdentifiers::SIGN_FAIL_EXIST:{}
+
         default:
         {
             qFatal() << "void MainWindow::slotReadyRead. unknow messType";
@@ -174,13 +182,6 @@ void MainWindow::SendToServer(Message &message) {
 
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
-    // UserData& userdata = UserData::getInstance();
-
-    // QString message = QString("%1,%2,%3,%4")
-    // .arg(MESAGE)
-    //     .arg(Interlocutor)
-    //     .arg(MySocket)
-    //     .arg(ui->lineEdit->text());
 
     Message message;
     message.id = MesageIdentifiers::MESAGE;

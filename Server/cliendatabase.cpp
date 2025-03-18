@@ -64,17 +64,18 @@ MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
 
 
     if(nickCounter == false) {
-        return MesageIdentifiers::LOGIN_FAIL_NAME; 
         qDebug() << "LOGIN_FAIL_NAME";
+        return MesageIdentifiers::LOGIN_FAIL_NAME; 
     }
     else if (passCounter == false) {
-        return MesageIdentifiers::LOGIN_FAIL_PASS;
         qDebug() << "LOGIN_FAIL_PASS";
+        return MesageIdentifiers::LOGIN_FAIL_PASS;
     }
-    else {
-        return MesageIdentifiers::LOGIN_SEC;
-        qDebug() << "LOGIN_SEC";
-    }
+
+    qDebug() << "LOGIN_SEC";
+    return MesageIdentifiers::LOGIN_SEC;
+
+
 
 
 }

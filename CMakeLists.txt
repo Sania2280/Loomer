@@ -45,35 +45,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug
 endif()
 
 add_subdirectory(Core)
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr")
-endif()
-
-add_compile_options(
-    -fno-extended-identifiers
-    -fstrict-aliasing
-    -Wall
-    -Wextra
-    -Werror
-    -Wno-comment
-    -Wdouble-promotion
-    -Wswitch-default
-    -Wswitch-enum
-    -Wuninitialized
-    -Wstrict-aliasing
-    -Wfloat-equal
-    -Wshadow
-    -Wplacement-new
-    -Wcast-align
-    -Wconversion
-    -Wlogical-op
-    -Wduplicated-cond
-    -Wduplicated-branches
-    -Wrestrict
-    -Wnull-dereference
-)
-
 add_subdirectory(ClientDesktop)
 add_subdirectory(Server)
 

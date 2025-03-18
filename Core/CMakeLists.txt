@@ -20,6 +20,8 @@ FetchContent_MakeAvailable(msgpack-cxx)
 add_library(Core STATIC
   Mpack.hpp
   Mpack.cpp
+  message.h
+  enums.h
 )
 
 target_include_directories(Core
@@ -30,6 +32,8 @@ target_include_directories(Core
 target_link_libraries(Core
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
+
+    PUBLIC
         msgpack-cxx
 )
 

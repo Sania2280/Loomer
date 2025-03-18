@@ -58,7 +58,6 @@ void server::incomingConnection(qintptr socketDescriptor) {
             emit disconnectedClient(socketDescriptor, IP);
         });
 
-        // emit newClientConnected(socket, Sockets);
     }
 }
 
@@ -72,7 +71,6 @@ void server::slotsReadyRead() {
         if (message.id == MesageIdentifiers::MESAGE) {
             QTcpSocket *RESIVER = nullptr; // Указатель на сокет получателя
             QTcpSocket *SENDER = nullptr; // Указатель на сокет отправителя
-            // QString TEXT = parts[3];
 
             for (int i = 0; i < Sockets.size(); ++i) {
                 if (Sockets[i]->socketDescriptor() == std::stoll(message.messageData.resivDesk)){
@@ -89,9 +87,10 @@ void server::slotsReadyRead() {
 
             Message messToSend;
             messToSend.id = MesageIdentifiers::MESAGE;
-            messToSend.messageData.senderDesk = SENDER->socketDescriptor();
+            messToSend.messageData.senderDesk = QString::number(SENDER->socketDescriptor()).toStdString();
+            messToSend.messageData.message = message.messageData.message;
 
-            emit sendingMesage(RESIVER, message);
+            emit sendingMesage(RESIVER, messToSend);
         }
         else if(message.id == MesageIdentifiers::LOG){
 
@@ -100,9 +99,6 @@ void server::slotsReadyRead() {
                                                QString::fromStdString(message.registrationData.pass));
 
             if(logInFlag != MesageIdentifiers::LOGIN_FAIL_NAME && logInFlag != MesageIdentifiers::LOGIN_FAIL_PASS){
-                // QString message = QString("%1,%2")
-                //                       .arg(LOGIN_SEC)
-                //                       .arg(socket->socketDescriptor());
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_SEC;
@@ -113,8 +109,6 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
             else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_NAME){
-                // QString message = QString("%1")
-                // .arg(LOGIN_FAIL_NAME);
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_NAME;
@@ -123,8 +117,6 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
             else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_PASS){
-                // QString message = QString("%1")
-                // .arg(LOGIN_FAIL_PASS);
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_PASS;
@@ -137,11 +129,9 @@ void server::slotsReadyRead() {
             ClienDataBase clientDB;
             MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nickName),
                                                            QString::fromStdString(message.registrationData.pass),
-                                                           socket->socketDescriptor());
+                                                           static_cast<int>(socket->socketDescriptor()));
 
             if(sginUpFlag == MesageIdentifiers::SIGN_SEC){
-            // QString message = QString("%1")
-            //                        .arg(SIGN_SEC);
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_SEC;
@@ -149,8 +139,6 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
             else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL){
-                // QString message = QString("%1")
-                //                     .arg(SIGN_FAIL);
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_FAIL;
@@ -158,8 +146,6 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
             else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL_EXIST){
-                // QString message = QString("%1")
-                // .arg(SIGN_FAIL_EXIST);
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_FAIL_EXIST;

@@ -52,12 +52,6 @@ void ServerConnector::ConnectToServer()
 
 void ServerConnector::SendMyData(MesageIdentifiers status)
 {
-    // QString message = QString("%1,%2,%3")
-    //     .arg(status)
-    //     .arg(userData.name)
-    //     .arg(userData.pass);
-
-
     Message message;
     message.id = status;
     message.registrationData.nickName = userData.name.toStdString();
@@ -109,16 +103,31 @@ void ServerConnector::slotReadyRead()
                 qDebug() << "Accaaunt created";
                 regWind->ui->listWidget_errors->clear();
                 regWind->ui->listWidget_errors->addItem("Accaunt created succsed");
+                break;
             }
             case MesageIdentifiers::SIGN_FAIL:{
                 qDebug() << "Created accaunt ERROR";
                 regWind->ui->listWidget_errors->clear();
                 regWind->ui->listWidget_errors->addItem("ERROR: Accaunt creation Faild");
+                break;
             }
             case MesageIdentifiers::SIGN_FAIL_EXIST:{
                 qDebug() << "User Exist ERROR";
                 regWind->ui->listWidget_errors->clear();
                 regWind->ui->listWidget_errors->addItem("ERROR: User alredy exist");
+                break;
+            }
+            case MesageIdentifiers::NONE:{}
+            case MesageIdentifiers::ID_MY:{}
+            case MesageIdentifiers::ID_CLIENT:{}
+            case MesageIdentifiers::ID_DELETE:{}
+            case MesageIdentifiers::MESAGE:{}
+            case MesageIdentifiers::LOG:{}
+            case MesageIdentifiers::SIGN:{}
+            case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+
+            default: {
+                break;
             }
 
         }
@@ -141,7 +150,7 @@ void ServerConnector::onConnected() {
     qDebug() << "Connected to Server";
 }
 
-void ServerConnector::onError(QAbstractSocket::SocketError error) {
+void ServerConnector::onError() {
     if(Close_Window_stat)return;
 
     qWarning() << "Error connect to Server:" << socket->errorString();
