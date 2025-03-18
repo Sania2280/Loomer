@@ -1,6 +1,7 @@
 #ifndef SERVERCONNECTOR_H
 #define SERVERCONNECTOR_H
 
+#include "enums.h"
 #include <QString>
 #include <QObject>
 #include <QTcpSocket>
@@ -15,7 +16,7 @@ public:
     explicit ServerConnector(QObject* parent = nullptr, RegWindow *rWindow = nullptr);
 
     void ConnectToServer();
-    void SendMyData(int status);
+    void SendMyData(MesageIdentifiers status);
 
 
 

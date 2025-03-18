@@ -23,7 +23,7 @@ void ClienDataBase::CreateateDB()
     }
 }
 
-QString ClienDataBase::LogIn(QString nick, QString pass)
+MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
 {
     qDebug() << "Log In";
 
@@ -62,14 +62,14 @@ QString ClienDataBase::LogIn(QString nick, QString pass)
         }
     }
 
-    if(nickCounter == false) {return "LOGIN_FAIL_NAME";}
-    else if (passCounter == false) {return "LOGIN_FAIL_PASS";}
-    else {return desckriptor;}
+    if(nickCounter == false) {return MesageIdentifiers::LOGIN_FAIL_NAME; qDebug() << "LOGIN_FAIL_NAME";}
+    else if (passCounter == false) {return MesageIdentifiers::LOGIN_FAIL_PASS;qDebug() << "LOGIN_FAIL_PASS";}
+    else {return MesageIdentifiers::LOGIN_SEC;qDebug() << "LOGIN_SEC";}
 
 
 }
 
-QString ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
+MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descriptor)
 {
     qDebug() << "Sing Up";
 
@@ -81,7 +81,7 @@ QString ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
         // После создания базы нужно снова открыть файл для чтения
         if (!file.open(QIODevice::ReadOnly)) {
             qWarning() << "Error open DB for reading after creation:";
-            return "SIGN_FAIL";
+            return MesageIdentifiers::SIGN_FAIL;
         }
     }
 
@@ -102,7 +102,7 @@ QString ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
         if (userObj.contains("nick") && userObj.contains("password")) {
             if (userObj.value("nick").toString() == nick ) {
                 qDebug() << "User already exist" << key;
-                return "SIGN_FAIL_EXIST";
+                return MesageIdentifiers::SIGN_FAIL_EXIST;
 
               }
         }
@@ -112,7 +112,7 @@ QString ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
     QJsonObject newUser;
     newUser["nick"] = nick;
     newUser["password"] = pass;
-    newUser["desk"] = QString::number(socket->socketDescriptor());
+    newUser["desk"] = descriptor;
 
     // Добавляем нового пользователя; желательно использовать уникальный ключ
     database[QString::number(ClientID(database))] = newUser;
@@ -121,12 +121,12 @@ QString ClienDataBase::SingUp(QString nick, QString pass, QTcpSocket *socket)
     // Открываем файл для записи
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << "Error open DB for writing:" << file.errorString();
-        return "SIGN_FAIL";
+        return MesageIdentifiers::SIGN_FAIL;
     }
     file.write(newDoc.toJson(QJsonDocument::Indented));
     file.close();
 
-    return "SIGN_SEC";
+    return MesageIdentifiers::SIGN_SEC;
 }
 
 int ClienDataBase::ClientID(QJsonObject database)

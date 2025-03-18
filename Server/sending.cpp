@@ -45,19 +45,37 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
 
         // Отправляем новому клиенту информацию о других сокетах
 
-        QString identifier1 = String_to_Send(QString::number(ID_CLIENT)
-                                             ,otherSocket->peerAddress().toString()
-                                             ,QString::number(otherSocket->socketDescriptor()));
+        // QString identifier1 = String_to_Send(QString::number(ID_CLIENT)
+        //                                      ,otherSocket->peerAddress().toString()
+        //                                      ,QString::number(otherSocket->socketDescriptor()));
 
-        sendToSocket(socket, identifier1);
+        Message messToSend1 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
+                                           otherSocket->peerAddress().toString(),
+                                           QString::number(otherSocket->socketDescriptor()));
+
+
+        // messToSend1.id = MesageIdentifiers::ID_CLIENT;
+        // messToSend1.newOrDeleteClientInNet.ip = otherSocket->peerAddress().toString().toStdString();
+        // messToSend1.newOrDeleteClientInNet.descriptor = otherSocket->socketDescriptor();
+
+        sendToSocket(socket, messToSend1);
 
         // Отправляем другим сокетам информацию о новом клиенте
 
-         QString identifier2 = String_to_Send(QString::number(ID_CLIENT)
-                                             ,socket->peerAddress().toString()
-                                             ,QString::number(socket->socketDescriptor()));
+         // QString identifier2 = String_to_Send(QString::number(ID_CLIENT)
+         //                                     ,socket->peerAddress().toString()
+         //                                     ,QString::number(socket->socketDescriptor()));
 
-        sendToSocket(otherSocket, identifier2);
+        Message messToSend2 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
+                                           socket->peerAddress().toString(),
+                                           QString::number(socket->socketDescriptor()));
+
+
+        // messToSend1.id = MesageIdentifiers::ID_CLIENT;
+        // messToSend1.newOrDeleteClientInNet.ip = socket->peerAddress().toString().toStdString();
+        // messToSend1.newOrDeleteClientInNet.descriptor = socket->socketDescriptor();
+
+        sendToSocket(otherSocket, messToSend2);
     }
 
 }
@@ -73,25 +91,28 @@ void Sending::Get_Disconnected_Client(qintptr socket, QString IP) {
 
     for (int i = 0; i < Sockets.size(); i++) {
 
-        QString identifier3 = String_to_Send(QString::number(ID_DELETE), IP
-                                             ,QString::number(static_cast<qint64>(socket)));
+        // QString identifier3 = String_to_Send(QString::number(ID_DELETE), IP
+        //                                      ,QString::number(static_cast<qint64>(socket)));
 
-        sendToSocket(Sockets[i], identifier3);
+        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket));
+
+        sendToSocket(Sockets[i], messToSend3);
     }
     mutex1.unlock();
 }
 
-void Sending::sendToSocket(QTcpSocket *socket, const QString &message) {
+void Sending::sendToSocket(QTcpSocket *socket, Message message) {
     if (socket->state() != QAbstractSocket::ConnectedState) {
         qWarning() << "Socket not connected:" << socket->socketDescriptor();
         return;
     }
 
     M_pack m_pack;
+
+    qDebug() << message.registrationData.desckriptor;
+
     socket->write(m_pack.puck(message).data());
     socket->flush();
-
-    qInfo()<<"mesage" << message;
 
 
     // if (!socket->waitForBytesWritten(5000)) { // Timeout для предотвращения вечного ожидания
@@ -102,13 +123,15 @@ void Sending::sendToSocket(QTcpSocket *socket, const QString &message) {
 }
 
 
-QString Sending::String_to_Send(QString ID, QString IP, QString DESCK)
+Message Sending::ObjectToSend(MesageIdentifiers ID, QString IP, QString DESCK)
 {
-    QString mesage = QString("%1,%2,%3")
-        .arg(ID)
-        .arg(IP)
-        .arg(DESCK);
-    return mesage;
+    Message messToSend;
+
+    messToSend.id = ID;
+    messToSend.newOrDeleteClientInNet.ip = IP.toStdString();
+    messToSend.newOrDeleteClientInNet.descriptor = DESCK.toStdString();
+
+    return messToSend;
 }
 
 

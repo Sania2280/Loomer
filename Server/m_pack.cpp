@@ -1,16 +1,20 @@
 #include "m_pack.h"
-
 #include <msgpack.hpp>
-QString M_pack::unpack(QByteArray rawData) {
-    msgpack::object_handle oh = msgpack::unpack(rawData.constData(), rawData.size());
-    msgpack::object obj = oh.get();
-    QString data = QString::fromStdString(obj.as<std::string>());
-    return data;
+#include "message.h"
+
+std::string M_pack::puck(Message &rawData){
+
+    msgpack::sbuffer buffer;
+    msgpack::pack(buffer, rawData);
+    return std::string(buffer.data(), buffer.size());
 }
 
-std::string M_pack::puck(QString rawData){
-    std::string msg = rawData.toStdString();
-    msgpack::sbuffer buffer;
-    msgpack::pack(buffer, msg);
-    return std::string(buffer.data(), buffer.size());
+Message M_pack::unpack(std::string rawData) {
+
+    msgpack::object_handle oh = msgpack::unpack(rawData.data(), rawData.size());
+    msgpack::object obj = oh.get();
+
+    Message data;
+    obj.convert(data);
+    return data;
 }

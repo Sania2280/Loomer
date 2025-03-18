@@ -117,15 +117,12 @@ void RegWindow::on_pushButton_end_clicked()
     userData.name = ui->lineEdit_name->text();
     userData.pass = ui->lineEdit_pass->text();
 
-    int STATUS;
 
     if(userData.status == RegWind::LOG) {
-        STATUS = LOG;
-        serverConnector->SendMyData(STATUS);
+        serverConnector->SendMyData(MesageIdentifiers::LOG);
     }
     else if (userData.status == RegWind::SIGN) {
-        STATUS = SIGN;
-        serverConnector->SendMyData(STATUS);
+        serverConnector->SendMyData(MesageIdentifiers::SIGN);
     }
 
 }
