@@ -26,13 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     UserData& userdata = UserData::getInstance();
 
     qDebug() << "User name:" << userdata.name;
-
     this->socket = userdata.getSocket();
-
-    qDebug()<<"Socket on MianWind" << socket << "desck" << socket->socketDescriptor();
-
-    qDebug() << "resived" << userdata.desck;
-
     MySocket = userdata.desck;
 
 
@@ -97,7 +91,7 @@ void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
 void MainWindow::onDisconnected() {
      if(Close_Window_stat)return;
 
-    qWarning() << "Disconnected from Server. Reconnecting...";
+    qWarning() << "Disconnected from Server main. Reconnecting...";
     QTimer::singleShot(3000, this, &MainWindow::setupConnection);
 }
 

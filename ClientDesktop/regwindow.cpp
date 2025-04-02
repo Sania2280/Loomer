@@ -5,7 +5,7 @@
 #include "ServerConnector.h"
 
 
-#include<QFile>
+#include <QFile>
 #include <qtimer.h>
 
 
@@ -33,9 +33,11 @@ RegWindow::RegWindow(QWidget *parent)
 
     serverConnector->ConnectToServer();
 
-    connect(this, &RegWindow::CloseWindow, this,[this](){
+    connect(this, &::RegWindow::CloseWindow, this,[this](){
+        Close_Window_stat = true;
         userData.mainWindStarted = true;
         this->close();
+        qDebug() << "Go to main";
     });
 
 }
@@ -58,6 +60,13 @@ void RegWindow::StartUpWindow()
     ui->pushButton_end->hide();
     ui->pushButton_return->hide();
 }
+
+void RegWindow::closeEvent(QCloseEvent *event)
+{
+    qDebug() << "Close event";
+    QDialog::closeEvent(event);
+}
+
 
 QString RegWindow::Style_Sheete() {
 

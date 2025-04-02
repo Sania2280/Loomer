@@ -28,8 +28,10 @@ public:
 private slots:
     void on_pushButton_Log_in_clicked();
     void on_pushButton_Sing_up_clicked();
-    void on_pushButton_end_clicked();
     void on_pushButton_return_clicked();
+
+public slots:
+    void on_pushButton_end_clicked();
 
 
 
@@ -45,8 +47,9 @@ private:
 signals:
     void CloseWindow();
 
-
-
+protected:
+    using QDialog::closeEvent;
+    void closeEvent(QCloseEvent *event) override;
 
 };
 

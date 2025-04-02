@@ -1,7 +1,6 @@
 #include <QApplication>
 #include "mainwindow.h"
 #include "regwindow.h"
-#include "UserData.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

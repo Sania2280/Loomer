@@ -20,7 +20,12 @@ extern UserData &userData ;
 ServerConnector::ServerConnector(QObject *parent, RegWindow *rWindow) :
     QObject(parent),
     socket(new QTcpSocket(this)),
-    regWind(rWindow) {}
+    regWind(rWindow) {
+
+        connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
+        connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);
+        connect(socket, &QTcpSocket::disconnected, this, &ServerConnector::onDisconnected);
+     }
 
 void ServerConnector::ConnectToServer()
 {
@@ -31,7 +36,7 @@ void ServerConnector::ConnectToServer()
         socket = new QTcpSocket(this);
     }
 
-    socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
+    SetUpConnection();
     userData.mainWindStarted = false;
 
     if (!userData.getSocket()) {  // Проверка перед установкой
@@ -42,7 +47,7 @@ void ServerConnector::ConnectToServer()
     }
 
     if (!socket->waitForConnected(5000)) {
-        qWarning() << "Не удалось подключиться к серверу:" << socket->errorString();
+        qWarning() << "Error connection to server:" << socket->errorString();
         return;
     }
 
@@ -53,6 +58,7 @@ void ServerConnector::ConnectToServer()
 void ServerConnector::SendMyData(MesageIdentifiers status)
 {
     Message message;
+
     message.id = status;
     message.registrationData.nickName = userData.name.toStdString();
     message.registrationData.pass = userData.pass.toStdString();
@@ -62,6 +68,8 @@ void ServerConnector::SendMyData(MesageIdentifiers status)
     if (!socket->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << socket->errorString();
     }
+
+
 }
 
 
@@ -137,17 +145,18 @@ void ServerConnector::slotReadyRead()
 
 
 void ServerConnector::SetUpConnection(){
-    // connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
-    // connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);
-    // connect(socket, &QTcpSocket::disconnected, this, &ServerConnector::onDisconnected);
 
-    // socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
-
+    socket->abort();
+    socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
 }
 
 
 void ServerConnector::onConnected() {
     qDebug() << "Connected to Server";
+
+    regWind->ui->listWidget_errors->clear();
+    regWind->ui->listWidget_errors->addItem("Connected to Server");
+    QTimer::singleShot(3000, regWind->ui->listWidget_errors, &QListWidget::clear);
 }
 
 void ServerConnector::onError() {
@@ -162,6 +171,14 @@ void ServerConnector::onDisconnected() {
     if(Close_Window_stat)return;
 
     qWarning() << "Disconnected from Server. Reconnecting...";
-    QTimer::singleShot(3000, this, &::ServerConnector::SetUpConnection);
+    QTimer::singleShot(3000, this, [this](){
+        ServerConnector::SetUpConnection();
+
+        if(regWind != nullptr){
+        regWind->ui->listWidget_errors->clear();
+        regWind->ui->listWidget_errors->addItem("ERROR: lost connection");
+        }
+    });
+
 }
 
