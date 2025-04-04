@@ -1,7 +1,8 @@
-#include "ServerConnector.h"
+#include "serverconnector.h"
 #include "regwindow.h"
 #include "UserData.h"
 #include "config.h"
+#include "reconnection.h"
 
 #include "Mpack.hpp"
 #include "ui_RegWindow.h"
@@ -21,6 +22,9 @@ ServerConnector::ServerConnector(QObject *parent, RegWindow *rWindow) :
     QObject(parent),
     socket(new QTcpSocket(this)),
     regWind(rWindow) {
+
+    // Reconnection reconection(socket, regWind) ;
+
 
         connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
         connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);

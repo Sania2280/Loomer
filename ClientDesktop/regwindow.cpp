@@ -2,7 +2,8 @@
 #include "ui_RegWindow.h"
 #include "UserData.h"
 #include "enums.h"
-#include "ServerConnector.h"
+#include "serverconnector.h"
+
 
 
 #include <QFile>
@@ -45,6 +46,7 @@ RegWindow::RegWindow(QWidget *parent)
 RegWindow::~RegWindow()
 {
     delete ui;
+    delete serverConnector;
 }
 
 

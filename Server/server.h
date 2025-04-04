@@ -6,7 +6,7 @@
 #include <QList>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "Config.hpp"
+#include "config.hpp"
 
 class Sending;
 
