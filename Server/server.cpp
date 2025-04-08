@@ -152,7 +152,7 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
         }
-        else if(message.id== MesageIdentifiers::CLIENT_READY_TO_WORCK){
+        else if(message.id == MesageIdentifiers::CLIENT_READY_TO_WORCK){
             emit newClientConnected(socket, Sockets);
         }
     }

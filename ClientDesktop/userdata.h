@@ -24,7 +24,6 @@ public:
 
 
      void setSocket(QTcpSocket* socket) ;
-
      QTcpSocket* getSocket() const { return UserSocket; }
 
 private:

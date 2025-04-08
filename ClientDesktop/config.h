@@ -17,7 +17,7 @@ public:
 
     struct Settings {
         QJsonObject config_obj;
-        qint16 server_port;
+        quint16 server_port;
         QString server_ip;
     };
 

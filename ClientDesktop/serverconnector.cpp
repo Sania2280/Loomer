@@ -22,10 +22,13 @@ ServerConnector::ServerConnector(QObject *parent, RegWindow *rWindow) :
     socket(new QTcpSocket(this)),
     regWind(rWindow) {
 
-        connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
-        connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);
-        connect(socket, &QTcpSocket::disconnected, this, &ServerConnector::onDisconnected);
-     }
+    // socket = userData.getSocket();
+
+        // connect(socket, &QTcpSocket::connected, this, &ServerConnector::onConnected);
+        // connect(socket, &QTcpSocket::errorOccurred, this, &ServerConnector::onError);
+        // connect(socket, &QTcpSocket::disconnected, this, &ServerConnector::onDisconnected);
+
+    }
 
 void ServerConnector::ConnectToServer()
 {
@@ -36,7 +39,6 @@ void ServerConnector::ConnectToServer()
         socket = new QTcpSocket(this);
     }
 
-    SetUpConnection();
     userData.mainWindStarted = false;
 
     if (!userData.getSocket()) {  // Проверка перед установкой
@@ -46,12 +48,8 @@ void ServerConnector::ConnectToServer()
         qWarning() << "Socet is already exist";
     }
 
-    if (!socket->waitForConnected(5000)) {
-        qWarning() << "Error connection to server:" << socket->errorString();
-        return;
-    }
+    SetUpConnection();
 
-    connect(socket, &QTcpSocket::readyRead, this, &ServerConnector::slotReadyRead);
 
 }
 
@@ -63,85 +61,103 @@ void ServerConnector::SendMyData(MesageIdentifiers status)
     message.registrationData.nickName = userData.name.toStdString();
     message.registrationData.pass = userData.pass.toStdString();
 
+    socket = userData.getSocket();
+
     socket->write(QByteArray::fromStdString(Mpack::puck(message)));
 
     if (!socket->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << socket->errorString();
     }
 
+    connect(socket, &QTcpSocket::readyRead, this, &ServerConnector::slotReadyRead);
 
 }
 
 
 
-void ServerConnector::slotReadyRead()
-{
+void ServerConnector::slotReadyRead() {
     qDebug() << "Reading...";
 
     UserData& userdata = UserData::getInstance();
 
-    if(userdata.mainWindStarted != true){
+    // добавляем пришедшие данные в буфер
+    buffer.append(socket->readAll());
 
-    Message message = Mpack::unpack(socket->readAll().toStdString());
+    while (true) {
+        try {
+            // Пробуем распаковать из буфера
+            std::string rawData(buffer.data(), static_cast<std::size_t>(buffer.size()));
+            Message message = Mpack::unpack(rawData);
 
-        if(message.id == MesageIdentifiers::LOGIN_SEC){
-            qDebug() << "LOGIN_SEC";
-        }
+            // удаляем из буфера считанные байты
+            std::size_t consumed = rawData.size();
+            buffer.remove(0, static_cast<int>(consumed));
 
-        switch (message.id) {
-            case MesageIdentifiers::LOGIN_SEC:{
-                qDebug()<< "Got desk: " << message.registrationData.desckriptor;
-                userdata.desck = QString::fromStdString(message.registrationData.desckriptor);
-                emit regWind->CloseWindow();
-                break;
+            if(userdata.mainWindStarted != true) {
+                switch (message.id) {
+                case MesageIdentifiers::LOGIN_SEC:
+                {
+                    qDebug()<< "Got desk: " << message.registrationData.desckriptor;
+                    userdata.desck = QString::fromStdString(message.registrationData.desckriptor);
+                    emit regWind->CloseWindow();
+                    break;
                 }
-            case MesageIdentifiers::LOGIN_FAIL_NAME:{
-                qDebug() << "Log in faill NAME";
-                regWind->ui->listWidget_errors->clear();
-                regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Name");
-                break;
-            }
-            case MesageIdentifiers::LOGIN_FAIL_PASS:{
-                qDebug() << " Log in faill PASS";
-                regWind->ui->listWidget_errors->clear();
-                regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Password");
-                break;
-            }
-            case MesageIdentifiers::SIGN_SEC:{
-                qDebug() << "Accaaunt created";
-                regWind->ui->listWidget_errors->clear();
-                regWind->ui->listWidget_errors->addItem("Accaunt created succsed");
-                break;
-            }
-            case MesageIdentifiers::SIGN_FAIL:{
-                qDebug() << "Created accaunt ERROR";
-                regWind->ui->listWidget_errors->clear();
-                regWind->ui->listWidget_errors->addItem("ERROR: Accaunt creation Faild");
-                break;
-            }
-            case MesageIdentifiers::SIGN_FAIL_EXIST:{
-                qDebug() << "User Exist ERROR";
-                regWind->ui->listWidget_errors->clear();
-                regWind->ui->listWidget_errors->addItem("ERROR: User alredy exist");
-                break;
-            }
-            case MesageIdentifiers::NONE:{}
-            case MesageIdentifiers::ID_MY:{}
-            case MesageIdentifiers::ID_CLIENT:{}
-            case MesageIdentifiers::ID_DELETE:{}
-            case MesageIdentifiers::MESAGE:{}
-            case MesageIdentifiers::LOG:{}
-            case MesageIdentifiers::SIGN:{}
-            case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+                case MesageIdentifiers::LOGIN_FAIL_NAME:
+                {
+                    qDebug() << "Log in fail NAME";
+                    regWind->ui->listWidget_errors->clear();
+                    regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Name");
+                    break;
+                }
+                case MesageIdentifiers::LOGIN_FAIL_PASS:
+                {
+                    qDebug() << "Log in fail PASS";
+                    regWind->ui->listWidget_errors->clear();
+                    regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Password");
+                    break;
+                }
+                case MesageIdentifiers::SIGN_SEC:
+                {
+                    qDebug() << "Account created";
+                    regWind->ui->listWidget_errors->clear();
+                    regWind->ui->listWidget_errors->addItem("Account created successfully");
+                    break;
+                }
+                case MesageIdentifiers::SIGN_FAIL:
+                {
+                    qDebug() << "Account creation ERROR";
+                    regWind->ui->listWidget_errors->clear();
+                    regWind->ui->listWidget_errors->addItem("ERROR: Account creation Failed");
+                    break;
+                }
+                case MesageIdentifiers::SIGN_FAIL_EXIST:
+                {
+                    qDebug() << "User exists ERROR";
+                    regWind->ui->listWidget_errors->clear();
+                    regWind->ui->listWidget_errors->addItem("ERROR: User already exists");
+                    break;
+                }
 
-            default: {
-                break;
+                case MesageIdentifiers::NONE:{}
+                case MesageIdentifiers::ID_MY:{}
+                case MesageIdentifiers::ID_CLIENT:{}
+                case MesageIdentifiers::ID_DELETE:{}
+                case MesageIdentifiers::MESAGE:{}
+                case MesageIdentifiers::LOG:{}
+                case MesageIdentifiers::SIGN:{}
+                case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+                default:
+                    break;
+                }
             }
-
+        } catch (const msgpack::v1::insufficient_bytes&) {
+            // Это нормальное состояние, если ещё нет полного сообщения
+            break; // Прерываем цикл и ждём больше данных
         }
-
     }
 }
+
+
 
 
 void ServerConnector::SetUpConnection(){

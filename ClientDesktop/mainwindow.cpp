@@ -14,7 +14,6 @@
 #include <QDir>
 #include <QTimer>
 
-#include "Mpack.hpp"
 
 #include "enums.h"
 
@@ -44,7 +43,11 @@ MainWindow::MainWindow(QWidget *parent)
     Config config;
     config.Read();
 
-    setupConnection();
+    // setupConnection();
+
+    // connect(socket, &QTcpSocket::connected, this, &MainWindow::onConnected);
+    // connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onError);
+    // connect(socket, &QTcpSocket::disconnected, this, &MainWindow::onDisconnected);
 
     qDebug() << QCoreApplication::applicationDirPath();
 
@@ -67,12 +70,9 @@ void MainWindow::closeEvent(QCloseEvent *event){
 }
 
 void MainWindow::setupConnection(){
-    // connect(socket, &QTcpSocket::connected, this, &MainWindow::onConnected);
-    // connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onError);
-    // connect(socket, &QTcpSocket::disconnected, this, &MainWindow::onDisconnected);
 
-    // socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
-
+    socket->abort();
+    socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
 }
 
 
@@ -83,7 +83,7 @@ void MainWindow::onConnected() {
 void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
     if(Close_Window_stat)return;
 
-    qWarning() << "Error connect to Server:" << socket->errorString();
+    qWarning() << "Error connect to Server from Main:" << socket->errorString();
     // Запускаем повторное подключение через 3 секунды:
     QTimer::singleShot(3000, this, &MainWindow::setupConnection);
 }
@@ -91,7 +91,7 @@ void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
 void MainWindow::onDisconnected() {
      if(Close_Window_stat)return;
 
-    qWarning() << "Disconnected from Server main. Reconnecting...";
+    qWarning() << "Disconnected from Server main. Reconnecting from Main...";
     QTimer::singleShot(3000, this, &MainWindow::setupConnection);
 }
 
@@ -102,66 +102,81 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
+    // Чтение всех доступных данных в buffer
+    buffer.append(socket->readAll());
 
-    Message message = Mpack::unpack(socket->readAll().toStdString());
+    while (!buffer.isEmpty()) {
+        // Преобразуем данные в строку для распаковки
+        std::string rawData(buffer.data(), static_cast<std::size_t>(buffer.size()));
 
-    switch (message.id) {
+        try {
+            // Пытаемся распаковать данные
+            Message message = Mpack::unpack(rawData);
 
-        case MesageIdentifiers::ID_CLIENT: // the_identifier
-        {
-            if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))){
-                Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-                MainWindow::Socket_print();
+            // Обрабатываем сообщение
+            switch (message.id) {
+            case MesageIdentifiers::ID_CLIENT: {
+                if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))) {
+                    Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+                    MainWindow::Socket_print();
+                }
+                break;
             }
-            break;
+
+            case MesageIdentifiers::ID_DELETE: {
+                Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
+                MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+                break;
+            }
+
+            case MesageIdentifiers::MESAGE: {
+                CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
+                QWidget *container = new QWidget;
+                QHBoxLayout *layout = new QHBoxLayout(container);
+
+                layout->setContentsMargins(0, 0, 0, 0);
+                layout->setSpacing(0);
+                layout->addWidget(widget);
+                container->setLayout(layout);
+                layout->addStretch();
+
+                QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
+                item->setSizeHint(container->sizeHint());
+                ui->listWidget_2->setItemWidget(item, container);
+                ui->listWidget_2->scrollToBottom();
+                break;
+            }
+            case MesageIdentifiers::LOG:{}
+            case MesageIdentifiers::NONE:{}
+            case MesageIdentifiers::SIGN:{}
+            case MesageIdentifiers::ID_MY:{}
+            case MesageIdentifiers::SIGN_SEC:{}
+            case MesageIdentifiers::SIGN_FAIL:{}
+            case MesageIdentifiers::LOGIN_SEC:{}
+            case MesageIdentifiers::LOGIN_FAIL_PASS:{}
+            case MesageIdentifiers::LOGIN_FAIL_NAME:{}
+            case MesageIdentifiers::SIGN_FAIL_EXIST:{}
+            case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+
+
+            default:
+                qFatal() << "Unknown message type!";
+            }
+
+            // Удаляем из buffer уже обработанные данные
+            buffer.remove(0, static_cast<qsizetype>(rawData.size()));
         }
-
-        case MesageIdentifiers::ID_DELETE: // delete_client;
-        {
-            Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
-            MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-            break;
-        }
-
-        case MesageIdentifiers::MESAGE: // message
-        {
-            CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
-            QWidget *container = new QWidget;
-            QHBoxLayout *layout = new QHBoxLayout(container);
-
-            layout->setContentsMargins(0, 0, 0, 0);
-            layout->setSpacing(0);
-
-            layout->addWidget(widget);
-
-            container->setLayout(layout);
-            layout->addStretch();
-
-            QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
-            item->setSizeHint(container->sizeHint());
-            ui->listWidget_2->setItemWidget(item, container);
-            ui->listWidget_2->scrollToBottom();
-            break;
-        }
-        case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
-        case MesageIdentifiers::NONE:{}
-        case MesageIdentifiers::ID_MY:{}
-        case MesageIdentifiers::LOG:{}
-        case MesageIdentifiers::SIGN:{}
-        case MesageIdentifiers::LOGIN_SEC:{}
-        case MesageIdentifiers::LOGIN_FAIL_PASS:{}
-        case MesageIdentifiers::LOGIN_FAIL_NAME:{}
-        case MesageIdentifiers::SIGN_FAIL:{}
-        case MesageIdentifiers::SIGN_SEC:{}
-        case MesageIdentifiers::SIGN_FAIL_EXIST:{}
-
-        default:
-        {
-            qFatal() << "void MainWindow::slotReadyRead. unknow messType";
+        catch (const msgpack::v1::insufficient_bytes&) {
+            // Если данных недостаточно, ожидаем больше данных
+            qDebug() << "Insufficient bytes, waiting for more data...";
+            break;  // Прерываем цикл, чтобы подождать новые данные
         }
     }
-
 }
+
+
+
+
 
 void MainWindow::SendToServer(Message &message) {
     if (socket->state() == QAbstractSocket::ConnectedState) {

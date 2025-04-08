@@ -31,7 +31,7 @@ RegWindow::RegWindow(QWidget *parent)
 
     StartUpWindow();
 
-    serverConnector->ConnectToServer();
+    // serverConnector->ConnectToServer();
 
     connect(this, &::RegWindow::CloseWindow, this,[this](){
         Close_Window_stat = true;
