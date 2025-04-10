@@ -113,6 +113,12 @@ void MainWindow::slotReadyRead() {
             // Пытаемся распаковать данные
             Message message = Mpack::unpack(rawData);
 
+            if(message.id == MesageIdentifiers::ID_CLIENT){
+                qDebug() << "ID_CLIENT";
+            }
+
+            qDebug() << "New Desk:" <<message.newOrDeleteClientInNet.descriptor;
+
             // Обрабатываем сообщение
             switch (message.id) {
             case MesageIdentifiers::ID_CLIENT: {
