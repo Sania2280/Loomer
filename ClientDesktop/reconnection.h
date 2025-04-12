@@ -29,8 +29,9 @@ public:
 
 private slots:
 
-    void onConnected();
     void onError();
+    void onConnected();
+    void tryReconnect();
     void onDisconnected();
 
     void setConnection();

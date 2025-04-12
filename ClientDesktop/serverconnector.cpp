@@ -155,7 +155,6 @@ void ServerConnector::slotReadyRead() {
                     }
                 }
             } catch (const msgpack::v1::insufficient_bytes&) {
-                // Это нормальное состояние, если ещё нет полного сообщения
                 break; // Прерываем цикл и ждём больше данных
             }
         }
