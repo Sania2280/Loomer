@@ -15,7 +15,8 @@ enum class MesageIdentifiers {
     SIGN_SEC,
     SIGN_FAIL,
     SIGN_FAIL_EXIST,
-    CLIENT_READY_TO_WORCK
+    CLIENT_READY_TO_WORCK,
+    RECONNECTION
 };
 
 enum class Directorys {

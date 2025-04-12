@@ -52,11 +52,13 @@ MainWindow::MainWindow(QWidget *parent)
     qDebug() << QCoreApplication::applicationDirPath();
 
     connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
+    qDebug() << "Sock state: " << socket->state();
 
     Message messToSend;
 
     messToSend.id = MesageIdentifiers::CLIENT_READY_TO_WORCK;
     messToSend.messageData.senderDesk = MySocket.toStdString();
+    qDebug() << messToSend.messageData.senderDesk;
 
     SendToServer(messToSend);
 
@@ -102,85 +104,68 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::slotReadyRead() {
-    // Чтение всех доступных данных в buffer
-    buffer.append(socket->readAll());
 
-    while (!buffer.isEmpty()) {
-        // Преобразуем данные в строку для распаковки
-        std::string rawData(buffer.data(), static_cast<std::size_t>(buffer.size()));
+    Message message = Mpack::unpack(socket->readAll().toStdString());
 
-        try {
-            // Пытаемся распаковать данные
-            Message message = Mpack::unpack(rawData);
+    switch (message.id) {
 
-            if(message.id == MesageIdentifiers::ID_CLIENT){
-                qDebug() << "ID_CLIENT";
-            }
-
-            qDebug() << "New Desk:" <<message.newOrDeleteClientInNet.descriptor;
-
-            // Обрабатываем сообщение
-            switch (message.id) {
-            case MesageIdentifiers::ID_CLIENT: {
-                if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))) {
-                    Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-                    MainWindow::Socket_print();
-                }
-                break;
-            }
-
-            case MesageIdentifiers::ID_DELETE: {
-                Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
-                MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-                break;
-            }
-
-            case MesageIdentifiers::MESAGE: {
-                CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
-                QWidget *container = new QWidget;
-                QHBoxLayout *layout = new QHBoxLayout(container);
-
-                layout->setContentsMargins(0, 0, 0, 0);
-                layout->setSpacing(0);
-                layout->addWidget(widget);
-                container->setLayout(layout);
-                layout->addStretch();
-
-                QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
-                item->setSizeHint(container->sizeHint());
-                ui->listWidget_2->setItemWidget(item, container);
-                ui->listWidget_2->scrollToBottom();
-                break;
-            }
-            case MesageIdentifiers::LOG:{}
-            case MesageIdentifiers::NONE:{}
-            case MesageIdentifiers::SIGN:{}
-            case MesageIdentifiers::ID_MY:{}
-            case MesageIdentifiers::SIGN_SEC:{}
-            case MesageIdentifiers::SIGN_FAIL:{}
-            case MesageIdentifiers::LOGIN_SEC:{}
-            case MesageIdentifiers::LOGIN_FAIL_PASS:{}
-            case MesageIdentifiers::LOGIN_FAIL_NAME:{}
-            case MesageIdentifiers::SIGN_FAIL_EXIST:{}
-            case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
-
-
-            default:
-                qFatal() << "Unknown message type!";
-            }
-
-            // Удаляем из buffer уже обработанные данные
-            buffer.remove(0, static_cast<qsizetype>(rawData.size()));
+    case MesageIdentifiers::ID_CLIENT: // the_identifier
+    {
+        if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))){
+            Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+            MainWindow::Socket_print();
         }
-        catch (const msgpack::v1::insufficient_bytes&) {
-            // Если данных недостаточно, ожидаем больше данных
-            qDebug() << "Insufficient bytes, waiting for more data...";
-            break;  // Прерываем цикл, чтобы подождать новые данные
-        }
+        break;
     }
+
+    case MesageIdentifiers::ID_DELETE: // delete_client;
+    {
+        Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
+        MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+        break;
+    }
+
+    case MesageIdentifiers::MESAGE: // message
+    {
+        CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
+        QWidget *container = new QWidget;
+        QHBoxLayout *layout = new QHBoxLayout(container);
+
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
+
+        layout->addWidget(widget);
+
+        container->setLayout(layout);
+        layout->addStretch();
+
+        QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
+        item->setSizeHint(container->sizeHint());
+        ui->listWidget_2->setItemWidget(item, container);
+        ui->listWidget_2->scrollToBottom();
+        break;
+    }
+    case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+    case MesageIdentifiers::NONE:{}
+    case MesageIdentifiers::ID_MY:{}
+    case MesageIdentifiers::LOG:{}
+    case MesageIdentifiers::SIGN:{}
+    case MesageIdentifiers::LOGIN_SEC:{}
+    case MesageIdentifiers::LOGIN_FAIL_PASS:{}
+    case MesageIdentifiers::LOGIN_FAIL_NAME:{}
+    case MesageIdentifiers::SIGN_FAIL:{}
+    case MesageIdentifiers::SIGN_SEC:{}
+    case MesageIdentifiers::SIGN_FAIL_EXIST:{}
+    case MesageIdentifiers::RECONNECTION:{}
+
+
+    default:
+    {
+        qFatal() << "void MainWindow::slotReadyRead. unknow messType";
+    }
+    }
+
 }
-
-
 
 
 

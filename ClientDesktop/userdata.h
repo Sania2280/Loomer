@@ -20,6 +20,7 @@ public:
      QString e_male;
      QString desck;
      RegWind status;
+
      bool mainWindStarted;
 
 

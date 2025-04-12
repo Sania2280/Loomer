@@ -23,6 +23,9 @@ public:
 
     static QTcpSocket* socket;
     static bool Close_Window_stat;
+    // static bool regWindExe;
+    // static bool mainWindExe;
+
 
 private slots:
 

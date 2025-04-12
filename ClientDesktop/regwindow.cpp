@@ -34,6 +34,8 @@ RegWindow::RegWindow(QWidget *parent)
     // serverConnector->ConnectToServer();
 
     connect(this, &::RegWindow::CloseWindow, this,[this](){
+
+        userData.mainWindStarted = true;
         this->close();
         qDebug() << "Go to main";
     });

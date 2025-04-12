@@ -96,6 +96,9 @@ void Sending::sendToSocket(QTcpSocket *socket, Message message) {
 
     socket->flush();
 
+    qDebug() << "Mess size: " << sizeof(message);
+
+
 
     // if (!socket->waitForBytesWritten(5000)) { // Timeout для предотвращения вечного ожидания
     //     qWarning() << "Error waiting for bytes to be written:"
@@ -112,6 +115,9 @@ Message Sending::ObjectToSend(MesageIdentifiers ID, QString IP, QString DESCK)
     messToSend.id = ID;
     messToSend.newOrDeleteClientInNet.ip = IP.toStdString();
     messToSend.newOrDeleteClientInNet.descriptor = DESCK.toStdString();
+
+    qDebug() << "IP: " << messToSend.newOrDeleteClientInNet.ip;
+    qDebug() << "ID: " << messToSend.newOrDeleteClientInNet.descriptor;
 
     return messToSend;
 }

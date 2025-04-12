@@ -76,83 +76,88 @@ void ServerConnector::SendMyData(MesageIdentifiers status)
 
 
 void ServerConnector::slotReadyRead() {
-    qDebug() << "Reading...";
 
-    UserData& userdata = UserData::getInstance();
+    if(!userData.mainWindStarted){
+        qDebug() << "Reading...";
 
-    // добавляем пришедшие данные в буфер
-    buffer.append(socket->readAll());
+        UserData& userdata = UserData::getInstance();
 
-    while (true) {
-        try {
-            // Пробуем распаковать из буфера
-            std::string rawData(buffer.data(), static_cast<std::size_t>(buffer.size()));
-            Message message = Mpack::unpack(rawData);
+        // добавляем пришедшие данные в буфер
+        buffer.append(socket->readAll());
 
-            // удаляем из буфера считанные байты
-            std::size_t consumed = rawData.size();
-            buffer.remove(0, static_cast<int>(consumed));
+        while (true) {
+            try {
+                // Пробуем распаковать из буфера
+                std::string rawData(buffer.data(), static_cast<std::size_t>(buffer.size()));
+                Message message = Mpack::unpack(rawData);
 
-            if(userdata.mainWindStarted != true) {
-                switch (message.id) {
-                case MesageIdentifiers::LOGIN_SEC:
-                {
-                    qDebug()<< "Got desk: " << message.registrationData.desckriptor;
-                    userdata.desck = QString::fromStdString(message.registrationData.desckriptor);
-                    emit regWind->CloseWindow();
-                    break;
-                }
-                case MesageIdentifiers::LOGIN_FAIL_NAME:
-                {
-                    qDebug() << "Log in fail NAME";
-                    regWind->ui->listWidget_errors->clear();
-                    regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Name");
-                    break;
-                }
-                case MesageIdentifiers::LOGIN_FAIL_PASS:
-                {
-                    qDebug() << "Log in fail PASS";
-                    regWind->ui->listWidget_errors->clear();
-                    regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Password");
-                    break;
-                }
-                case MesageIdentifiers::SIGN_SEC:
-                {
-                    qDebug() << "Account created";
-                    regWind->ui->listWidget_errors->clear();
-                    regWind->ui->listWidget_errors->addItem("Account created successfully");
-                    break;
-                }
-                case MesageIdentifiers::SIGN_FAIL:
-                {
-                    qDebug() << "Account creation ERROR";
-                    regWind->ui->listWidget_errors->clear();
-                    regWind->ui->listWidget_errors->addItem("ERROR: Account creation Failed");
-                    break;
-                }
-                case MesageIdentifiers::SIGN_FAIL_EXIST:
-                {
-                    qDebug() << "User exists ERROR";
-                    regWind->ui->listWidget_errors->clear();
-                    regWind->ui->listWidget_errors->addItem("ERROR: User already exists");
-                    break;
-                }
+                // удаляем из буфера считанные байты
+                std::size_t consumed = rawData.size();
+                buffer.remove(0, static_cast<int>(consumed));
 
-                case MesageIdentifiers::NONE:{}
-                case MesageIdentifiers::ID_MY:{}
-                case MesageIdentifiers::ID_CLIENT:{}
-                case MesageIdentifiers::ID_DELETE:{}
-                case MesageIdentifiers::MESAGE:{}
-                case MesageIdentifiers::LOG:{}
-                case MesageIdentifiers::SIGN:{}
-                case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
-                default:
-                    break;
+                if(userdata.mainWindStarted != true) {
+                    switch (message.id) {
+                    case MesageIdentifiers::LOGIN_SEC:
+                    {
+                        qDebug()<< "Got desk: " << message.registrationData.desckriptor;
+                        userdata.desck = QString::fromStdString(message.registrationData.desckriptor);
+                        emit regWind->CloseWindow();
+                        break;
+                    }
+                    case MesageIdentifiers::LOGIN_FAIL_NAME:
+                    {
+                        qDebug() << "Log in fail NAME";
+                        regWind->ui->listWidget_errors->clear();
+                        regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Name");
+                        break;
+                    }
+                    case MesageIdentifiers::LOGIN_FAIL_PASS:
+                    {
+                        qDebug() << "Log in fail PASS";
+                        regWind->ui->listWidget_errors->clear();
+                        regWind->ui->listWidget_errors->addItem("ERROR: Incorrect Password");
+                        break;
+                    }
+                    case MesageIdentifiers::SIGN_SEC:
+                    {
+                        qDebug() << "Account created";
+                        regWind->ui->listWidget_errors->clear();
+                        regWind->ui->listWidget_errors->addItem("Account created successfully");
+                        break;
+                    }
+                    case MesageIdentifiers::SIGN_FAIL:
+                    {
+                        qDebug() << "Account creation ERROR";
+                        regWind->ui->listWidget_errors->clear();
+                        regWind->ui->listWidget_errors->addItem("ERROR: Account creation Failed");
+                        break;
+                    }
+                    case MesageIdentifiers::SIGN_FAIL_EXIST:
+                    {
+                        qDebug() << "User exists ERROR";
+                        regWind->ui->listWidget_errors->clear();
+                        regWind->ui->listWidget_errors->addItem("ERROR: User already exists");
+                        break;
+                    }
+
+                    case MesageIdentifiers::NONE:{}
+                    case MesageIdentifiers::ID_MY:{}
+                    case MesageIdentifiers::ID_CLIENT:{}
+                    case MesageIdentifiers::ID_DELETE:{}
+                    case MesageIdentifiers::MESAGE:{}
+                    case MesageIdentifiers::LOG:{}
+                    case MesageIdentifiers::SIGN:{}
+                    case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+                    case MesageIdentifiers::RECONNECTION:{}
+
+                    default:
+                        break;
+                    }
                 }
+            } catch (const msgpack::v1::insufficient_bytes&) {
+                // Это нормальное состояние, если ещё нет полного сообщения
+                break; // Прерываем цикл и ждём больше данных
             }
-        } catch (const msgpack::v1::insufficient_bytes&) {
-            // Это нормальное состояние, если ещё нет полного сообщения
-            break; // Прерываем цикл и ждём больше данных
         }
     }
 }
