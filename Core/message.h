@@ -41,7 +41,16 @@ struct NewOrDeleteClientInNet
 {
     std::string descriptor;
     std::string ip;
-    MSGPACK_DEFINE(descriptor, ip);
+    std::string name;
+    MSGPACK_DEFINE(descriptor, ip, name);
+};
+
+struct Reconnect
+{
+    std::string ip;
+    std::string desck;
+    MSGPACK_DEFINE(desck, ip);
+
 };
 
 struct Message
@@ -51,10 +60,11 @@ struct Message
     MesageIdentifiers id = MesageIdentifiers::NONE;
 
     MessageData messageData ;
+    Reconnect reconnect;
     RegistrationData registrationData;
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
-    MSGPACK_DEFINE(id, messageData, registrationData, newOrDeleteClientInNet);
+    MSGPACK_DEFINE(id, messageData, registrationData, newOrDeleteClientInNet, reconnect);
 };
 
 

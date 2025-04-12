@@ -152,8 +152,12 @@ void server::slotsReadyRead() {
                 emit sendingMesage(socket, messToSend);
             }
         }
-        else if(message.id== MesageIdentifiers::CLIENT_READY_TO_WORCK){
+        else if(message.id == MesageIdentifiers::CLIENT_READY_TO_WORCK){
+            qDebug() << socket->socketDescriptor() << ": CLIENT_READY_TO_WORCK";
             emit newClientConnected(socket, Sockets);
+        }
+        else if(message.id == MesageIdentifiers::RECONNECTION){
+            qDebug() << "Reconnection: " << message.reconnect.desck;
         }
     }
 }

@@ -57,6 +57,7 @@ private:
     QVector<QString> Sockets;
 
     bool Close_Window_stat = false;
+    QByteArray buffer;
 
 protected:
     void closeEvent(QCloseEvent *event) override;

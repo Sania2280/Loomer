@@ -1,30 +1,50 @@
 #ifndef RECONNECTION_H
 #define RECONNECTION_H
 
-#include <QObject>
 #include <QTcpSocket>
+#include <QObject>
 
-class RegWindow; // forward declaration
+class RegWindow;
 
 class Reconnection : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Reconnection(QTcpSocket* socket, RegWindow* rWindow = nullptr);
 
 
-    void SetUpConnection();
+    static Reconnection& getInterface(){
+        static Reconnection rec;
+        return rec;
+    }
 
-    bool Close_Window_stat = false;
+    QTcpSocket* getSocket();
+
+    void setRegwind(RegWindow* regWind);
+    void createSocket();
+
+    static QTcpSocket* socket;
+    static bool Close_Window_stat;
+    // static bool regWindExe;
+    // static bool mainWindExe;
+
+
+private slots:
+
+    void onError();
+    void onConnected();
+    void tryReconnect();
+    void onDisconnected();
+
+    void setConnection();
 
 private:
-    QTcpSocket* m_socket;
-    RegWindow* m_regWind;
 
-    void onConnected();
-    void onError();
-    void onDisconnected();
+    explicit Reconnection(QObject* parent = nullptr) ;
+    Q_DISABLE_COPY(Reconnection)
+
+    RegWindow* regWindow = nullptr;
+
 };
 
 #endif // RECONNECTION_H

@@ -5,8 +5,9 @@
 #include <QTcpSocket>
 
 
-class MainWindow;
 
+
+class MainWindow;
 class ServerConnector;
 
 namespace Ui {

@@ -20,11 +20,11 @@ public:
      QString e_male;
      QString desck;
      RegWind status;
+
      bool mainWindStarted;
 
 
      void setSocket(QTcpSocket* socket) ;
-
      QTcpSocket* getSocket() const { return UserSocket; }
 
 private:

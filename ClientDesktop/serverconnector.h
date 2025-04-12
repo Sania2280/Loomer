@@ -24,6 +24,8 @@ private:
     QTcpSocket *socket;
     RegWindow *regWind;
     bool Close_Window_stat = false;
+    QByteArray buffer;
+
 
 
 signals:
@@ -35,8 +37,10 @@ public slots:
 
     void slotReadyRead();           // Слот для чтения данных из сокета
 
-    void onConnected();
+private slots:
+
     void onError();
+    void onConnected();
     void onDisconnected();
 
 };
