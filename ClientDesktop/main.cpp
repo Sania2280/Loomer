@@ -3,12 +3,13 @@
 #include "mainwindow.h"
 #include "reconnection.h"
 #include "regwindow.h"
+#include "QObject"
 
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    Reconnection& reconnection = Reconnection::getInterface();
+    Reconnection& reconnection = *Reconnection::getInterface();
     RegWindow* regwindow = new RegWindow();
 
     reconnection.setRegwind(regwindow);
@@ -19,7 +20,9 @@ int main(int argc, char *argv[]) {
     if (regwindresult == 0) {
         regwindow->close();
         delete regwindow;
+
         MainWindow mainwindow;
+        reconnection.setMainWind(&mainwindow);
         mainwindow.show();
         return app.exec();
     }

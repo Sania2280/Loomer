@@ -92,6 +92,9 @@ void Sending::sendToSocket(QTcpSocket *socket, Message message) {
 
     qDebug() << message.registrationData.desckriptor;
 
+    if(message.id == MesageIdentifiers::MESAGE){
+        qDebug() << "MESAGE";
+    }
     socket->write(Mpack::puck(message).data());
 
     socket->flush();
@@ -116,8 +119,9 @@ Message Sending::ObjectToSend(MesageIdentifiers ID, QString IP, QString DESCK)
     messToSend.newOrDeleteClientInNet.ip = IP.toStdString();
     messToSend.newOrDeleteClientInNet.descriptor = DESCK.toStdString();
 
+
     qDebug() << "IP: " << messToSend.newOrDeleteClientInNet.ip;
-    qDebug() << "ID: " << messToSend.newOrDeleteClientInNet.descriptor;
+    qDebug() << "DESCK: " << messToSend.newOrDeleteClientInNet.descriptor;
 
     return messToSend;
 }

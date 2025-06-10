@@ -2,12 +2,11 @@
 #include "ui_mainwindow.h"
 #include "config.h"
 
-#include "Mpack.hpp"
-
 #include "customwidgetitem.h"
 #include "getpath.h"
 #include "UserData.h"
 #include "message.h"
+#include "datasender.h"
 
 #include <QListWidget>
 #include <QStringBuilder>
@@ -18,11 +17,11 @@
 #include "enums.h"
 
 Config::Settings Config::settings;
+UserData& userdata = UserData::getInstance();
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
 
-    UserData& userdata = UserData::getInstance();
 
     qDebug() << "User name:" << userdata.name;
     this->socket = userdata.getSocket();
@@ -43,15 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
     Config config;
     config.Read();
 
-    // setupConnection();
-
-    // connect(socket, &QTcpSocket::connected, this, &MainWindow::onConnected);
-    // connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onError);
-    // connect(socket, &QTcpSocket::disconnected, this, &MainWindow::onDisconnected);
-
     qDebug() << QCoreApplication::applicationDirPath();
 
-    connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
     qDebug() << "Sock state: " << socket->state();
 
     Message messToSend;
@@ -71,148 +63,52 @@ void MainWindow::closeEvent(QCloseEvent *event){
 
 }
 
-void MainWindow::setupConnection(){
-
-    socket->abort();
-    socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
-}
-
-
-void MainWindow::onConnected() {
-    qDebug() << "Connected to Server";
-}
-
-void MainWindow::onError(QAbstractSocket::SocketError /*error*/) {
-    if(Close_Window_stat)return;
-
-    qWarning() << "Error connect to Server from Main:" << socket->errorString();
-    // Запускаем повторное подключение через 3 секунды:
-    QTimer::singleShot(3000, this, &MainWindow::setupConnection);
-}
-
-void MainWindow::onDisconnected() {
-     if(Close_Window_stat)return;
-
-    qWarning() << "Disconnected from Server main. Reconnecting from Main...";
-    QTimer::singleShot(3000, this, &MainWindow::setupConnection);
-}
-
 
 MainWindow::~MainWindow() {
     delete ui;
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
 }
 
-void MainWindow::slotReadyRead() {
-
-    Message message = Mpack::unpack(socket->readAll().toStdString());
-
-    switch (message.id) {
-
-    case MesageIdentifiers::ID_CLIENT: // the_identifier
-    {
-        if (!Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor))){
-            Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-            MainWindow::Socket_print();
-        }
-        break;
-    }
-
-    case MesageIdentifiers::ID_DELETE: // delete_client;
-    {
-        Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
-        MainWindow::Socket_delete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
-        break;
-    }
-
-    case MesageIdentifiers::MESAGE: // message
-    {
-        CustomListItem *widget = new CustomListItem(QString::fromStdString(message.messageData.message));
-        QWidget *container = new QWidget;
-        QHBoxLayout *layout = new QHBoxLayout(container);
-
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(0);
-
-        layout->addWidget(widget);
-
-        container->setLayout(layout);
-        layout->addStretch();
-
-        QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
-        item->setSizeHint(container->sizeHint());
-        ui->listWidget_2->setItemWidget(item, container);
-        ui->listWidget_2->scrollToBottom();
-        break;
-    }
-    case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
-    case MesageIdentifiers::NONE:{}
-    case MesageIdentifiers::ID_MY:{}
-    case MesageIdentifiers::LOG:{}
-    case MesageIdentifiers::SIGN:{}
-    case MesageIdentifiers::LOGIN_SEC:{}
-    case MesageIdentifiers::LOGIN_FAIL_PASS:{}
-    case MesageIdentifiers::LOGIN_FAIL_NAME:{}
-    case MesageIdentifiers::SIGN_FAIL:{}
-    case MesageIdentifiers::SIGN_SEC:{}
-    case MesageIdentifiers::SIGN_FAIL_EXIST:{}
-    case MesageIdentifiers::RECONNECTION:{}
-
-
-    default:
-    {
-        qFatal() << "void MainWindow::slotReadyRead. unknow messType";
-    }
-    }
-
-}
-
-
 
 void MainWindow::SendToServer(Message &message) {
-    if (socket->state() == QAbstractSocket::ConnectedState) {
+    DataSender dataSendler;
+    dataSendler.SendMyMasseg(message);
 
-        socket->write(Mpack::puck(message).data());
-
-        qDebug() << socket;
-    } else {
-        qDebug() << "Socket not connected";
-    }
 }
 
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
 
-    Message message;
-    message.id = MesageIdentifiers::MESAGE;
-    message.messageData.resivDesk = Interlocutor.toStdString();
-    message.messageData.senderDesk = MySocket.toStdString();
-    message.messageData.message = ui->lineEdit->text().toStdString();
+            Message message;
+            message.id = MesageIdentifiers::MESAGE;
+            message.messageData.resivDesk = Interlocutor.toStdString();
+            message.messageData.senderDesk = MySocket.toStdString();
+            message.messageData.message = ui->lineEdit->text().toStdString();
 
 
-    CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
-    QWidget *container = new QWidget;
-    QHBoxLayout *layout = new QHBoxLayout(container);
+            CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
+            QWidget *container = new QWidget;
+            QHBoxLayout *layout = new QHBoxLayout(container);
 
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
+            layout->setContentsMargins(0, 0, 0, 0);
+            layout->setSpacing(0);
 
-    layout->addStretch();
+            layout->addStretch();
 
-    layout->addWidget(widget);
+            layout->addWidget(widget);
 
-    container->setLayout(layout);
+            container->setLayout(layout);
 
-    // Создаём элемент списка и устанавливаем контейнер как виджет элемента
-    QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
-    item->setSizeHint(container->sizeHint());
-    ui->listWidget_2->setItemWidget(item, container);
-    ui->listWidget_2->scrollToBottom();
+            // Создаём элемент списка и устанавливаем контейнер как виджет элемента
+            QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
+            item->setSizeHint(container->sizeHint());
+            ui->listWidget_2->setItemWidget(item, container);
+            ui->listWidget_2->scrollToBottom();
 
 
-    SendToServer(message);
+            SendToServer(message);
 
-}
+        }
     ui->lineEdit->clear();
 }
 
@@ -236,7 +132,7 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 
 
 void MainWindow::Socket_print() {
-    for (auto i : Sockets) {
+    for (const auto &i : userdata.Sockets) {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
@@ -249,6 +145,7 @@ void MainWindow::Socket_print() {
 }
 
 void MainWindow::Socket_delete(QString socket_to_delete) {
+    qDebug() << "Soc to Del" << socket_to_delete;
 
     QList<QListWidgetItem *> items =
         ui->listWidget->findItems(socket_to_delete, Qt::MatchExactly);
@@ -258,6 +155,28 @@ void MainWindow::Socket_delete(QString socket_to_delete) {
             delete ui->listWidget->takeItem(row);
         }
     }
+}
+
+void MainWindow::PrintMassage(QString massage)
+{
+    qDebug() << "MESAGE: " << massage;
+
+    CustomListItem *widget = new CustomListItem(massage);
+    QWidget *container = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout(container);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    layout->addWidget(widget);
+
+    container->setLayout(layout);
+    layout->addStretch();
+
+    QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
+    item->setSizeHint(container->sizeHint());
+    ui->listWidget_2->setItemWidget(item, container);
+    ui->listWidget_2->scrollToBottom();
 }
 
 

@@ -1,10 +1,12 @@
 #ifndef RECONNECTION_H
 #define RECONNECTION_H
 
+#include "enums.h"
 #include <QTcpSocket>
 #include <QObject>
 
 class RegWindow;
+class MainWindow;
 
 class Reconnection : public QObject
 {
@@ -13,14 +15,15 @@ class Reconnection : public QObject
 public:
 
 
-    static Reconnection& getInterface(){
+    static Reconnection* getInterface(){
         static Reconnection rec;
-        return rec;
+        return &rec;
     }
 
     QTcpSocket* getSocket();
 
     void setRegwind(RegWindow* regWind);
+    void setMainWind(MainWindow* mainWin);
     void createSocket();
 
     static QTcpSocket* socket;
@@ -28,6 +31,7 @@ public:
     // static bool regWindExe;
     // static bool mainWindExe;
 
+    void connections();
 
 private slots:
 
@@ -37,6 +41,7 @@ private slots:
     void onDisconnected();
 
     void setConnection();
+    void slotReadyRed();
 
 private:
 
@@ -44,7 +49,16 @@ private:
     Q_DISABLE_COPY(Reconnection)
 
     RegWindow* regWindow = nullptr;
+    MainWindow* mainWind = nullptr;
 
+
+
+signals:
+    void mainWindSocketPrint();
+    void mainWindSocketDelete(QString socket_to_delete);
+    void mainWindPrintMessage(QString message);
+    void regWindErrorWorker(MesageIdentifiers id);
+    void regWindConnectionStatWorker(ConnectionStat stat);
 };
 
 #endif // RECONNECTION_H

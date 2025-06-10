@@ -1,6 +1,7 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
+#include <qobject.h>
 enum class MesageIdentifiers {
     NONE,
     ID_MY,
@@ -37,5 +38,12 @@ enum class RegWind {
     LOG,
     SIGN
 };
+
+enum class ConnectionStat{
+    CONNECTED,
+    DISCONNECTED
+};
+
+Q_DECLARE_METATYPE(MesageIdentifiers)
 
 #endif // ENUMS_H

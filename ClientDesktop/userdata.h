@@ -23,6 +23,7 @@ public:
 
      bool mainWindStarted;
 
+     QVector<QString> Sockets;
 
      void setSocket(QTcpSocket* socket) ;
      QTcpSocket* getSocket() const { return UserSocket; }

@@ -3,8 +3,9 @@
 #include "Mpack.hpp"
 #include "userdata.h"
 #include "regwindow.h"
-#include "ui_regwindow.h"
 #include "reconnection.h"
+#include "mainwindow.h"
+
 
 #include <qtimer.h>
 #include <QThread>
@@ -19,7 +20,18 @@ Reconnection::Reconnection(QObject* parent ) :QObject(parent){
 
     connect(socket, &QTcpSocket::connected, this, &Reconnection::onConnected);
     connect(socket, &QTcpSocket::errorOccurred, this, &Reconnection::onError);
+    connect(socket, &QTcpSocket::readyRead, this, &Reconnection::slotReadyRed);
     connect(socket, &QTcpSocket::disconnected, this, &Reconnection::onDisconnected);
+
+
+}
+
+void Reconnection::connections()
+{
+    connect(Reconnection::getInterface(), &Reconnection::mainWindSocketPrint, mainWind, &MainWindow::Socket_print);
+    connect(Reconnection::getInterface(), &Reconnection::mainWindSocketDelete, mainWind, &MainWindow::Socket_delete);
+    connect(Reconnection::getInterface(), &Reconnection::mainWindPrintMessage, mainWind, &MainWindow::PrintMassage);
+
 }
 
 void Reconnection::createSocket()
@@ -47,17 +59,21 @@ QTcpSocket *Reconnection::getSocket()
 void Reconnection::setRegwind(RegWindow *regWind)
 {
     this->regWindow = regWind;
-    // Reconnection::regWindExe = true;
-    // Reconnection::mainWindExe = false;
+    connect(Reconnection::getInterface(), &Reconnection::regWindErrorWorker, regWindow, &RegWindow::logSingWorker);
+    connect(Reconnection::getInterface(), &Reconnection::regWindConnectionStatWorker, regWindow, &RegWindow::connectStatWorker);
+}
+
+void Reconnection::setMainWind(MainWindow *mainWin)
+{
+    this->mainWind = mainWin;
+    connections();
 }
 
 void Reconnection::onConnected() {
     qDebug() << "Connected to Server";
 
     if (!userData.mainWindStarted) {
-        regWindow->ui->listWidget_errors->clear();
-        regWindow->ui->listWidget_errors->addItem("Connected to Server");
-        QTimer::singleShot(3000, regWindow->ui->listWidget_errors, &QListWidget::clear);
+        emit regWindConnectionStatWorker(ConnectionStat::CONNECTED);
     } else {
         Message message;
         message.id = MesageIdentifiers::RECONNECTION;
@@ -79,8 +95,7 @@ void Reconnection::onDisconnected() {
     qWarning() << "Disconnected from Server. Reconnecting...";
 
     if (!userData.mainWindStarted && regWindow) {
-        regWindow->ui->listWidget_errors->clear();
-        regWindow->ui->listWidget_errors->addItem("ERROR: lost connection");
+        emit regWindConnectionStatWorker(ConnectionStat::DISCONNECTED);
     }
 
     QTimer::singleShot(3000, this, &Reconnection::tryReconnect);
@@ -108,4 +123,88 @@ void Reconnection::setConnection() {
     socket->abort();  // Прерываем текущее соединение, если было
     socket->connectToHost(Config::settings.server_ip, Config::settings.server_port);
 }
+
+void Reconnection::slotReadyRed()
+{
+
+    Message message = Mpack::unpack(socket->readAll().toStdString());
+
+    switch (message.id) {
+        case MesageIdentifiers::ID_CLIENT: // the_identifier
+        {
+            if (!userData.Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor)) && userData.mainWindStarted){
+                userData.Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+                emit mainWindSocketPrint();
+            }
+            break;
+        }
+        case MesageIdentifiers::ID_DELETE:
+        {
+            if (userData.Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor)) && userData.mainWindStarted){
+                userData.Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
+                emit mainWindSocketDelete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+            }
+            break;
+        }
+        case MesageIdentifiers::MESAGE:
+        {
+            if (userData.mainWindStarted){
+               emit mainWindPrintMessage(QString::fromStdString(message.messageData.message));
+            }
+            break;
+        }
+        case MesageIdentifiers::SIGN_FAIL:
+        {
+            if(!userData.mainWindStarted){
+                emit regWindErrorWorker(MesageIdentifiers::SIGN_FAIL);
+            }
+            break;
+        }
+        case MesageIdentifiers::LOGIN_FAIL_PASS:
+        {
+            if(!userData.mainWindStarted){
+                emit regWindErrorWorker(MesageIdentifiers::LOGIN_FAIL_PASS);
+            }
+            break;
+        }
+        case MesageIdentifiers::LOGIN_FAIL_NAME:
+        {
+            if(!userData.mainWindStarted){
+                qDebug() << "Error name";
+                emit regWindErrorWorker(MesageIdentifiers::LOGIN_FAIL_NAME);
+            }
+            break;
+        }
+        case MesageIdentifiers::SIGN_FAIL_EXIST:
+        {
+            if(!userData.mainWindStarted){
+                emit regWindErrorWorker(MesageIdentifiers::SIGN_FAIL_EXIST);
+            }
+            break;
+        }
+        case MesageIdentifiers::LOGIN_SEC:
+        {
+            if(!userData.mainWindStarted){
+                qDebug()<< "Got desk: " << message.registrationData.desckriptor;
+                userData.desck = QString::fromStdString(message.registrationData.desckriptor);
+                emit regWindow->CloseWindow();
+            }
+        }
+        case MesageIdentifiers::SIGN_SEC:{}
+
+
+        case MesageIdentifiers::LOG:{}
+        case MesageIdentifiers::SIGN:{}
+        case MesageIdentifiers::NONE:{}
+        case MesageIdentifiers::ID_MY:{}
+        case MesageIdentifiers::RECONNECTION:{}
+        case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
+            default:
+        break;
+
+    }
+}
+
+
+
 
