@@ -18,7 +18,7 @@ public:
 signals:
 
 public slots:
-    void fromMain(server *s);
+    void fromMain(server *server);
 private:
     QList<QTcpSocket*>  Sockets;
      QTimer *timer;

@@ -30,11 +30,11 @@ struct MessageData
 };
 
 struct RegistrationData
-{
-    std::string nickName;
+{   std::string id;
+    std::string nick;
     std::string pass;
     std::string desckriptor;
-    MSGPACK_DEFINE(nickName, pass, desckriptor );
+    MSGPACK_DEFINE(id, nick, pass, desckriptor );
 };
 
 struct NewOrDeleteClientInNet
@@ -59,13 +59,14 @@ struct Message
     Message() {}
 
     MesageIdentifiers id = MesageIdentifiers::NONE;
+    std::string dbID;
 
     MessageData messageData ;
     Reconnect reconnect;
     RegistrationData registrationData;
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
-    MSGPACK_DEFINE(id, messageData, registrationData, newOrDeleteClientInNet, reconnect);
+    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect);
 };
 
 

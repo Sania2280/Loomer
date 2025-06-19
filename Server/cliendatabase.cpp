@@ -3,6 +3,8 @@
 
 #include <random>
 
+const QString DBname = "users.json";
+
 ClienDataBase::ClienDataBase(QObject *parent)
     : QObject{parent}
 {}
@@ -23,26 +25,16 @@ void ClienDataBase::CreateateDB()
     }
 }
 
-MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
+ClienDataBase::LogInStruct ClienDataBase::LogIn(QString nick, QString pass)
 {
     qDebug() << "Log In";
 
-    QFile file("users.json");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error open DB for reading:" ;
-        CreateateDB();
+    QJsonObject database = ReadFile(DBname);
 
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    QJsonObject database = doc.object();
-
-    QString desckriptor = "";
 
     bool nickCounter = false;
     bool passCounter = false;
+    QString clientID = QString();
 
     for (const QString &key : database.keys()) {
         QJsonValue value = database.value(key);
@@ -55,23 +47,40 @@ MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
             nickCounter = true;
             if(userObj.value("password").toString() == pass){
                 passCounter = true;
-                desckriptor = key;
+                clientID = key;
+                break;
             }
         }
     }
 
 
+
     if(nickCounter == false) {
         qDebug() << "LOGIN_FAIL_NAME";
-        return MesageIdentifiers::LOGIN_FAIL_NAME; 
+
+        LogInStruct logInStruct;
+        logInStruct.mesID = MesageIdentifiers::LOGIN_FAIL_NAME;
+        logInStruct.clientID = clientID;
+
+        return logInStruct;
     }
     else if (passCounter == false) {
         qDebug() << "LOGIN_FAIL_PASS";
-        return MesageIdentifiers::LOGIN_FAIL_PASS;
+
+        LogInStruct logInStruct;
+        logInStruct.mesID = MesageIdentifiers::LOGIN_FAIL_PASS;
+        logInStruct.clientID = clientID;
+
+
+        return logInStruct;
     }
 
+    LogInStruct logInStruct;
+    logInStruct.mesID = MesageIdentifiers::LOGIN_SEC;
+    logInStruct.clientID = clientID;
+
     qDebug() << "LOGIN_SEC";
-    return MesageIdentifiers::LOGIN_SEC;
+    return logInStruct;
 
 
 }
@@ -80,25 +89,9 @@ MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descript
 {
     qDebug() << "Sing Up";
 
-    QFile file("users.json");
-    // Попытка открыть файл для чтения
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error open DB for reading:";
-        CreateateDB();
-        // После создания базы нужно снова открыть файл для чтения
-        if (!file.open(QIODevice::ReadOnly)) {
-            qWarning() << "Error open DB for reading after creation:";
-            return MesageIdentifiers::SIGN_FAIL;
-        }
-    }
 
+    QJsonObject database = ReadFile(DBname);
 
-
-    QByteArray jsonData = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-    QJsonObject database = doc.object();
 
     for (const QString &key : database.keys()) {
         QJsonValue value = database.value(key);
@@ -124,6 +117,7 @@ MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descript
     // Добавляем нового пользователя; желательно использовать уникальный ключ
     database[QString::number(ClientID(database))] = newUser;
 
+    QFile file(DBname);
     QJsonDocument newDoc(database);
     // Открываем файл для записи
     if (!file.open(QIODevice::WriteOnly)) {
@@ -136,47 +130,26 @@ MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descript
     return MesageIdentifiers::SIGN_SEC;
 }
 
-QString ClienDataBase::GetNick(std::string descript)
+QString ClienDataBase::GetNick(std::string id)
 {
-    QFile file("users.json");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error opening DB for reading.";
-        CreateateDB();
-        return "";
-    }
 
-    QByteArray data = file.readAll();
-    file.close();
+    QJsonObject database = ReadFile(DBname);
 
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull() || !doc.isObject()) {
-        qWarning() << "Invalid JSON format.";
-        return "";
-    }
-
-    QJsonObject database = doc.object();
-    QString targetDesk = QString::fromStdString(descript).trimmed();
+    QString targetDesk = QString::fromStdString(id).trimmed();
 
     for (const QString &key : database.keys()) {
         QJsonValue value = database.value(key);
         if (!value.isObject())
             continue;
 
-        QJsonObject userObj = value.toObject();
-        QString desk;
-        if (userObj.value("desk").isDouble()) {
-            desk = QString::number(userObj.value("desk").toInt());
-        } else {
-            desk = userObj.value("desk").toString().trimmed();
+        if (key == QString::fromStdString(id)) {
+            qDebug() << "Nick found";
+            QJsonObject userObj = value.toObject();
+            return userObj.value("nick").toString();
         }
 
-        if (desk == targetDesk) {
-            QString nick = userObj.value("nick").toString();
-            qDebug() << "Found nick:" << nick;
-            return nick;
-        }
+
     }
-
     qDebug() << "Descriptor not found:" << targetDesk;
     return "";
 }
@@ -198,32 +171,69 @@ int ClienDataBase::ClientID(QJsonObject database)
     }   
 }
 
-QString ClienDataBase::RewriteDesk(QString desk)
+QString ClienDataBase::GetId(QString desk)
 {
-    QFile file("users.json");
+    QJsonObject database = ReadFile(DBname);
+
+    for (const QString& key : database.keys()) {
+
+        QJsonValue value = database.value(key);
+
+        QJsonObject userObj = value.toObject();
+
+        if(userObj.value("desk") == desk){
+            return key;
+        }
+    }
+
+    return QString();
+
+
+}
+
+void ClienDataBase::RewriteDesk(std::string id, QString desk)
+{
+    QJsonObject database = ReadFile(DBname);
+
+    QString userID = QString::fromStdString(id);
+
+    if (database.contains(userID)) {
+        QJsonObject userObj = database[userID].toObject();
+        userObj["desk"] = desk;
+        database[userID] = userObj; // Обязательно записываем обратно!
+
+        // Перезапись файла
+        QFile file(DBname);
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(QJsonDocument(database).toJson(QJsonDocument::Indented));
+            file.close();
+            qDebug() << "Desk rewritten successfully.";
+        } else {
+            qWarning() << "Failed to open DB for writing.";
+        }
+    } else {
+        qWarning() << "User ID not found:" << userID;
+    }
+}
+
+QJsonObject ClienDataBase::ReadFile(QString name)
+{
+    QFile file(name);
     if (!file.open(QIODevice::ReadOnly)) {
         qWarning() << "Error opening DB for reading.";
         CreateateDB();
-        return "";
     }
 
     QByteArray data = file.readAll();
     file.close();
 
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    QJsonObject database = doc.object();
 
     if (doc.isNull() || !doc.isObject()) {
         qWarning() << "Invalid JSON format.";
-        return "";
     }
 
-    for (const QString& key : database.keys()) {
-        QJsonValue value = database.value(key);
+    QJsonObject database = doc.object();
 
-        QJsonObject userObj = value.toObject();
-
-        // if(userObj.value(""))
-    }
-    return desk;
+    return database;
 }

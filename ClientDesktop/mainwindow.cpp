@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
 
-    setWindowTitle(userdata.name + " / " + MySocket);
+    setWindowTitle(userdata.name + " / " + MySocket + " / " + userdata.id);
 
     QIcon buton_icon("./images/send.png");
     ui->pushButton->setIcon(buton_icon);
@@ -50,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent)
     Message messToSend;
 
     messToSend.id = MesageIdentifiers::CLIENT_READY_TO_WORCK;
+    messToSend.dbID = userdata.id.toStdString();
     messToSend.messageData.senderDesk = MySocket.toStdString();
-    qDebug() << messToSend.messageData.senderDesk;
+    qDebug() <<  "Good id: "<<messToSend.dbID;
 
     SendToServer(messToSend);
-
 
 
 }

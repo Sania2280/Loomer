@@ -6,6 +6,7 @@
 
 #include "sending.h"
 #include "enums.h"
+#include "cliendatabase.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
@@ -24,11 +25,7 @@ Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
 
 
-void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_reciverd, QString nick) {
-
-    if(nick != ""){
-
-    }
+void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_reciverd, QString senderNick, QString senderId) {
 
     Sockets = Sockets_reciverd;
 
@@ -50,10 +47,16 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
 
         // Отправляем новому клиенту информацию о других сокетах
 
+        ClienDataBase clientDB;
+
+        QString resID = clientDB.GetId(QString::number(socket->socketDescriptor()));
+        QString resNick = clientDB.GetNick(resID.toStdString());
+
         Message messToSend1 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
                                            otherSocket->peerAddress().toString(),
                                            QString::number(otherSocket->socketDescriptor()),
-                                           nick);
+                                           resNick,
+                                           resID);
 
 
         sendToSocket(socket, messToSend1);
@@ -64,7 +67,8 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
         Message messToSend2 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
                                            socket->peerAddress().toString(),
                                            QString::number(socket->socketDescriptor()),
-                                           nick);
+                                           senderNick,
+                                           senderId);
 
         sendToSocket(otherSocket, messToSend2);
     }
@@ -82,7 +86,7 @@ void Sending::Get_Disconnected_Client(qintptr socket, QString IP) {
 
     for (int i = 0; i < Sockets.size(); i++) {
 
-        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket), QString ());
+        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket), QString (), QString ());
 
         sendToSocket(Sockets[i], messToSend3);
     }
@@ -117,11 +121,14 @@ void Sending::sendToSocket(QTcpSocket *socket, Message message) {
 }
 
 
-Message Sending::ObjectToSend(MesageIdentifiers MESID, QString IP, QString DESCK, QString NICK)
+Message Sending::ObjectToSend(MesageIdentifiers MESID, QString IP, QString DESCK, QString NICK, QString ID)
 {
     Message messToSend;
 
+    qDebug() << "ID: " << ID;
+
     messToSend.id = MESID;
+    messToSend.newOrDeleteClientInNet.id = ID.toStdString();
     messToSend.newOrDeleteClientInNet.ip = IP.toStdString();
     messToSend.newOrDeleteClientInNet.descriptor = DESCK.toStdString();
     messToSend.newOrDeleteClientInNet.nick = NICK.toStdString();

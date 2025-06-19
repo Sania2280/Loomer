@@ -45,42 +45,40 @@ void ClientDataBase::AddUser(Message mesege)
 
     QJsonObject database;
 
-    if(file.open(QIODevice::ReadOnly)){
+    if (file.open(QIODevice::ReadOnly)) {
         QJsonDocument oldDoc = QJsonDocument::fromJson(file.readAll());
         file.close();
         database = oldDoc.object();
-
-        for (const QString &key : database.keys()) {
-            QJsonValue value = database.value(key);
-            if (!value.isObject()){
-                continue;
-            }
-
-            QJsonObject userObj = value.toObject();
-            if(userObj.contains(QString::fromStdString(mesege.newOrDeleteClientInNet.id))){
-                qWarning() << "User is exist";
-                break;
-            }
-        }
-
-    }
-    else{
-        CreateDB();
-        AddUser(mesege);
+    } else {
+        CreateDB(); // создаём пустой JSON-файл, если он не существует
+        AddUser(mesege); // повторный вызов после создания файла
+        return;
     }
 
-    file.close();
+    QString userID = QString::fromStdString(mesege.newOrDeleteClientInNet.id);
 
+    if (database.contains(userID)) {
+        qWarning() << "User already exists. Skipping addition.";
+        return;
+    }
+
+    if(database.contains(UserData::getInstance().id)){
+        qWarning() << "User already exists. Skipping addition.";
+        return;
+    }
+
+    // Создаём нового пользователя
     QJsonObject newUser;
-    database[QString::fromStdString(mesege.newOrDeleteClientInNet.id)] = newUser;
+    newUser["nick"] = QString::fromStdString(mesege.newOrDeleteClientInNet.nick);
+    newUser["desk"] = QString::fromStdString(mesege.newOrDeleteClientInNet.descriptor);
 
-    if(file.open(QIODevice::WriteOnly)){
-        newUser["nick"] = QString::fromStdString(mesege.newOrDeleteClientInNet.nick);
-        newUser["desk"] = QString::fromStdString(mesege.newOrDeleteClientInNet.descriptor);
+    database[userID] = newUser;
 
-        database[QString::fromStdString(mesege.newOrDeleteClientInNet.id)] = newUser;
-
+    if (file.open(QIODevice::WriteOnly)) {
         file.write(QJsonDocument(database).toJson(QJsonDocument::Indented));
+        file.close();
+        qDebug() << "User added successfully";
+    } else {
+        qWarning() << "Failed to open file for writing";
     }
-    file.close();
 }

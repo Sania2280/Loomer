@@ -26,11 +26,13 @@ private slots:
 public:
     struct ClientInfo
     {
-        QString deck;
+        QTcpSocket * desk;
         QString nick;
     };
 
-    static QList<QTcpSocket *> Sockets;
+    static QList <QTcpSocket*> Sockets;
+
+    static QMap<QString , ClientInfo> ClientsData;
     static QList<QTcpSocket *> TempSockets;
 private:
     static QMutex mutex;
@@ -40,7 +42,7 @@ private:
     QHostAddress::SpecialAddress addressEnum;
 
 signals:
-    void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets, QString nick);
+    void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets, QString nick, QString id);
     void disconnectedClient(qintptr socet, QString IP);
     void sendingMesage(QTcpSocket *socket, Message &message);
 };

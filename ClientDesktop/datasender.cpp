@@ -16,7 +16,7 @@ void DataSender::SendMyData(MesageIdentifiers status)
     Message message;
 
     message.id = status;
-    message.registrationData.nickName = userData.name.toStdString();
+    message.registrationData.nick = userData.name.toStdString();
     message.registrationData.pass = userData.pass.toStdString();
 
 

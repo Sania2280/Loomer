@@ -6,7 +6,6 @@
 #include "server.h"
 #include "sending.h"
 #include "enums.h"
-#include "Config.hpp"
 #include "cliendatabase.h"
 #include"message.h"
 
@@ -62,7 +61,7 @@ void server::incomingConnection(qintptr socketDescriptor) {
 }
 
 void server::slotsReadyRead() {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    QTcpSocket *    socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
 
         qInfo() << "Reading data...";
@@ -95,28 +94,31 @@ void server::slotsReadyRead() {
         else if(message.id == MesageIdentifiers::LOG){
 
             ClienDataBase clientDB;
-            MesageIdentifiers logInFlag = clientDB.LogIn(QString::fromStdString(message.registrationData.nickName),
-                                               QString::fromStdString(message.registrationData.pass));
+            ClienDataBase::LogInStruct logInStruct = ClienDataBase::LogInStruct();
+            logInStruct = clientDB.LogIn(QString::fromStdString(message.registrationData.nick),
+                                                                    QString::fromStdString(message.registrationData.pass));
 
-            if(logInFlag != MesageIdentifiers::LOGIN_FAIL_NAME && logInFlag != MesageIdentifiers::LOGIN_FAIL_PASS){
+
+            if(logInStruct.mesID != MesageIdentifiers::LOGIN_FAIL_NAME && logInStruct.mesID != MesageIdentifiers::LOGIN_FAIL_PASS){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_SEC;
                 messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
+                messToSend.registrationData.id = logInStruct.clientID.toStdString();
 
                 qDebug() << "New desk: " << socket->socketDescriptor();
 
                 emit sendingMesage(socket, messToSend);
             }
-            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_NAME){
+            else if(logInStruct.mesID == MesageIdentifiers::LOGIN_FAIL_NAME){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_NAME;
 
-                qInfo() << "Log in fail NAME: " << message.registrationData.nickName;
+                qInfo() << "Log in fail NAME: " << message.registrationData.nick;
                 emit sendingMesage(socket, messToSend);
             }
-            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_PASS){
+            else if(logInStruct.mesID == MesageIdentifiers::LOGIN_FAIL_PASS){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_PASS;
@@ -124,10 +126,11 @@ void server::slotsReadyRead() {
                 qDebug() << "Log in fail PASS : " << socket->socketDescriptor();
                 emit sendingMesage(socket, messToSend);
             }
+
         }
         else if(message.id == MesageIdentifiers::SIGN){
             ClienDataBase clientDB;
-            MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nickName),
+            MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nick),
                                                            QString::fromStdString(message.registrationData.pass),
                                                            static_cast<int>(socket->socketDescriptor()));
 
@@ -156,11 +159,13 @@ void server::slotsReadyRead() {
             qDebug() << socket->socketDescriptor() << ": CLIENT_READY_TO_WORCK";
             ClienDataBase clientDB;
 
-            QString nick = clientDB.GetNick(QString::number(socket->socketDescriptor()).toStdString());
+            QString nick = clientDB.GetNick(message.dbID);
+            clientDB.RewriteDesk(message.dbID, QString::number(socket->socketDescriptor()));
 
-            qDebug() << socket->socketDescriptor() << "nick:" << nick;
 
-            emit newClientConnected(socket, Sockets, nick);
+            qDebug() << "New Deck: "<<QString::fromStdString(message.dbID);
+
+            emit newClientConnected(socket, Sockets, nick, QString::fromStdString(message.dbID));
         }
         else if(message.id == MesageIdentifiers::RECONNECTION){
             qDebug() << "Reconnection: " << message.reconnect.desck;

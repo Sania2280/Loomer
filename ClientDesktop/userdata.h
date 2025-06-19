@@ -19,6 +19,7 @@ public:
      QString pass;
      QString e_male;
      QString desck;
+     QString id;
      RegWind status;
 
      bool mainWindStarted;

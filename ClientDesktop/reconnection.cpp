@@ -190,6 +190,8 @@ void Reconnection::slotReadyRed()
             if(!userData.mainWindStarted){
                 qDebug()<< "Got desk: " << message.registrationData.desckriptor;
                 userData.desck = QString::fromStdString(message.registrationData.desckriptor);
+                userData.id = QString::fromStdString(message.registrationData.id);
+
                 DB.CreateDB();
                 qDebug() << "desk" << userData.desck;
                 emit regWindow->CloseWindow();
