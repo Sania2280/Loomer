@@ -154,7 +154,13 @@ void server::slotsReadyRead() {
         }
         else if(message.id == MesageIdentifiers::CLIENT_READY_TO_WORCK){
             qDebug() << socket->socketDescriptor() << ": CLIENT_READY_TO_WORCK";
-            emit newClientConnected(socket, Sockets);
+            ClienDataBase clientDB;
+
+            QString nick = clientDB.GetNick(QString::number(socket->socketDescriptor()).toStdString());
+
+            qDebug() << socket->socketDescriptor() << "nick:" << nick;
+
+            emit newClientConnected(socket, Sockets, nick);
         }
         else if(message.id == MesageIdentifiers::RECONNECTION){
             qDebug() << "Reconnection: " << message.reconnect.desck;

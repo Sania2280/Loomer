@@ -5,6 +5,7 @@
 #include "regwindow.h"
 #include "reconnection.h"
 #include "mainwindow.h"
+#include "clientdatabase.h"
 
 
 #include <qtimer.h>
@@ -13,6 +14,7 @@
 extern UserData &userData ;
 QTcpSocket* Reconnection::socket = nullptr;
 bool Reconnection::Close_Window_stat = false;
+ClientDataBase DB;
 
 Reconnection::Reconnection(QObject* parent ) :QObject(parent){
 
@@ -130,10 +132,11 @@ void Reconnection::slotReadyRed()
     Message message = Mpack::unpack(socket->readAll().toStdString());
 
     switch (message.id) {
-        case MesageIdentifiers::ID_CLIENT: // the_identifier
+        case MesageIdentifiers::ID_CLIENT:
         {
             if (!userData.Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor)) && userData.mainWindStarted){
                 userData.Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+                DB.AddUser(message);
                 emit mainWindSocketPrint();
             }
             break;
@@ -187,6 +190,8 @@ void Reconnection::slotReadyRed()
             if(!userData.mainWindStarted){
                 qDebug()<< "Got desk: " << message.registrationData.desckriptor;
                 userData.desck = QString::fromStdString(message.registrationData.desckriptor);
+                DB.CreateDB();
+                qDebug() << "desk" << userData.desck;
                 emit regWindow->CloseWindow();
             }
         }

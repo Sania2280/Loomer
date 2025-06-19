@@ -41,8 +41,6 @@ MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
 
     QString desckriptor = "";
 
-    QString persID;
-
     bool nickCounter = false;
     bool passCounter = false;
 
@@ -74,8 +72,6 @@ MesageIdentifiers ClienDataBase::LogIn(QString nick, QString pass)
 
     qDebug() << "LOGIN_SEC";
     return MesageIdentifiers::LOGIN_SEC;
-
-
 
 
 }
@@ -140,6 +136,52 @@ MesageIdentifiers ClienDataBase::SingUp(QString nick, QString pass, int descript
     return MesageIdentifiers::SIGN_SEC;
 }
 
+QString ClienDataBase::GetNick(std::string descript)
+{
+    QFile file("users.json");
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Error opening DB for reading.";
+        CreateateDB();
+        return "";
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull() || !doc.isObject()) {
+        qWarning() << "Invalid JSON format.";
+        return "";
+    }
+
+    QJsonObject database = doc.object();
+    QString targetDesk = QString::fromStdString(descript).trimmed();
+
+    for (const QString &key : database.keys()) {
+        QJsonValue value = database.value(key);
+        if (!value.isObject())
+            continue;
+
+        QJsonObject userObj = value.toObject();
+        QString desk;
+        if (userObj.value("desk").isDouble()) {
+            desk = QString::number(userObj.value("desk").toInt());
+        } else {
+            desk = userObj.value("desk").toString().trimmed();
+        }
+
+        if (desk == targetDesk) {
+            QString nick = userObj.value("nick").toString();
+            qDebug() << "Found nick:" << nick;
+            return nick;
+        }
+    }
+
+    qDebug() << "Descriptor not found:" << targetDesk;
+    return "";
+}
+
+
 int ClienDataBase::ClientID(QJsonObject database)
 {
     std::random_device rd;  // Ініціалізація випадкового пристрою
@@ -154,4 +196,34 @@ int ClienDataBase::ClientID(QJsonObject database)
     else {
         return randomID;
     }   
+}
+
+QString ClienDataBase::RewriteDesk(QString desk)
+{
+    QFile file("users.json");
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Error opening DB for reading.";
+        CreateateDB();
+        return "";
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonObject database = doc.object();
+
+    if (doc.isNull() || !doc.isObject()) {
+        qWarning() << "Invalid JSON format.";
+        return "";
+    }
+
+    for (const QString& key : database.keys()) {
+        QJsonValue value = database.value(key);
+
+        QJsonObject userObj = value.toObject();
+
+        // if(userObj.value(""))
+    }
+    return desk;
 }

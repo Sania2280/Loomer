@@ -7,6 +7,7 @@
 #include "UserData.h"
 #include "message.h"
 #include "datasender.h"
+#include "clientdatabase.h"
 
 #include <QListWidget>
 #include <QStringBuilder>
@@ -53,6 +54,8 @@ MainWindow::MainWindow(QWidget *parent)
     qDebug() << messToSend.messageData.senderDesk;
 
     SendToServer(messToSend);
+
+
 
 }
 

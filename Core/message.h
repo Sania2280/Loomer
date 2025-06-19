@@ -40,9 +40,10 @@ struct RegistrationData
 struct NewOrDeleteClientInNet
 {
     std::string descriptor;
+    std::string id;
     std::string ip;
-    std::string name;
-    MSGPACK_DEFINE(descriptor, ip, name);
+    std::string nick;
+    MSGPACK_DEFINE(descriptor, id, ip, nick);
 };
 
 struct Reconnect

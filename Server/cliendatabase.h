@@ -16,8 +16,10 @@ public:
     void CreateateDB();
     MesageIdentifiers LogIn(QString nick, QString pass);
     MesageIdentifiers SingUp(QString nick, QString pass, int descriptor);
+    QString GetNick(std::string descript);
 
     int ClientID(QJsonObject database);
+    int GetId(std::string id);
 
 private:
 

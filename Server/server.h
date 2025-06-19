@@ -24,6 +24,12 @@ private slots:
     void slotsReadyRead();
 
 public:
+    struct ClientInfo
+    {
+        QString deck;
+        QString nick;
+    };
+
     static QList<QTcpSocket *> Sockets;
     static QList<QTcpSocket *> TempSockets;
 private:
@@ -34,7 +40,7 @@ private:
     QHostAddress::SpecialAddress addressEnum;
 
 signals:
-    void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets);
+    void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets, QString nick);
     void disconnectedClient(qintptr socet, QString IP);
     void sendingMesage(QTcpSocket *socket, Message &message);
 };

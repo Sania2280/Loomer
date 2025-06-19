@@ -24,7 +24,11 @@ Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
 
 
-void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_reciverd) {
+void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_reciverd, QString nick) {
+
+    if(nick != ""){
+
+    }
 
     Sockets = Sockets_reciverd;
 
@@ -48,7 +52,8 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
 
         Message messToSend1 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
                                            otherSocket->peerAddress().toString(),
-                                           QString::number(otherSocket->socketDescriptor()));
+                                           QString::number(otherSocket->socketDescriptor()),
+                                           nick);
 
 
         sendToSocket(socket, messToSend1);
@@ -58,7 +63,8 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
 
         Message messToSend2 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
                                            socket->peerAddress().toString(),
-                                           QString::number(socket->socketDescriptor()));
+                                           QString::number(socket->socketDescriptor()),
+                                           nick);
 
         sendToSocket(otherSocket, messToSend2);
     }
@@ -76,7 +82,7 @@ void Sending::Get_Disconnected_Client(qintptr socket, QString IP) {
 
     for (int i = 0; i < Sockets.size(); i++) {
 
-        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket));
+        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket), QString ());
 
         sendToSocket(Sockets[i], messToSend3);
     }
@@ -111,13 +117,14 @@ void Sending::sendToSocket(QTcpSocket *socket, Message message) {
 }
 
 
-Message Sending::ObjectToSend(MesageIdentifiers ID, QString IP, QString DESCK)
+Message Sending::ObjectToSend(MesageIdentifiers MESID, QString IP, QString DESCK, QString NICK)
 {
     Message messToSend;
 
-    messToSend.id = ID;
+    messToSend.id = MESID;
     messToSend.newOrDeleteClientInNet.ip = IP.toStdString();
     messToSend.newOrDeleteClientInNet.descriptor = DESCK.toStdString();
+    messToSend.newOrDeleteClientInNet.nick = NICK.toStdString();
 
 
     qDebug() << "IP: " << messToSend.newOrDeleteClientInNet.ip;
