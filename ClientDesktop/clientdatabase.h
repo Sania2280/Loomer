@@ -13,6 +13,8 @@ public:
     void CreateDBfirst(QString desk);
     void AddUser(Message mesege);
 
+    QString GetNick();
+
 };
 
 #endif // CLIENTDATABASE_H

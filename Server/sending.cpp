@@ -25,23 +25,26 @@ Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
 
 
-void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_reciverd, QString senderNick, QString senderId) {
+void Sending::Get_New_Client(QString newId, QMap<QString , server::ClientInfo> &clientsData) {
 
-    Sockets = Sockets_reciverd;
+    ClientsData = clientsData;
 
     QThread::msleep(100);
 
-    for (int i = 0; i < Sockets.size(); ++i) {
-        QTcpSocket *otherSocket = Sockets[i];
+    for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
+
+        QString key = orderdId.key();
+        server::ClientInfo orderdClient = orderdId.value();
+
 
         // Пропускаем отключенные сокеты
-        if (otherSocket->state() != QAbstractSocket::ConnectedState) {
-            qWarning() << "Skipping disconnected socket:" << otherSocket;
+        if (orderdClient.desk->state() != QAbstractSocket::ConnectedState) {
+            qWarning() << "Skipping disconnected socket:" << orderdClient.desk->socketDescriptor();
             continue;
         }
 
         // Пропускаем сам себя
-        if (socket->socketDescriptor() == otherSocket->socketDescriptor()) {
+        if (newId == key) {
             continue;
         }
 
@@ -49,48 +52,59 @@ void Sending::Get_New_Client(QTcpSocket *socket, QList<QTcpSocket *> Sockets_rec
 
         ClienDataBase clientDB;
 
-        QString resID = clientDB.GetId(QString::number(socket->socketDescriptor()));
-        QString resNick = clientDB.GetNick(resID.toStdString());
 
         Message messToSend1 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
-                                           otherSocket->peerAddress().toString(),
-                                           QString::number(otherSocket->socketDescriptor()),
-                                           resNick,
-                                           resID);
+                                           orderdClient.desk->peerAddress().toString(),
+                                           QString::number(orderdClient.desk->socketDescriptor()),
+                                           orderdClient.nick,
+                                           key);
 
 
-        sendToSocket(socket, messToSend1);
+        sendToSocket(ClientsData[newId].desk, messToSend1);
 
         // Отправляем другим сокетам информацию о новом клиенте
 
 
         Message messToSend2 = ObjectToSend(MesageIdentifiers::ID_CLIENT,
-                                           socket->peerAddress().toString(),
-                                           QString::number(socket->socketDescriptor()),
-                                           senderNick,
-                                           senderId);
+                                           ClientsData[newId].desk->peerAddress().toString(),
+                                           QString::number(ClientsData[newId].desk->socketDescriptor()),
+                                           ClientsData[newId].nick,
+                                           newId);
 
-        sendToSocket(otherSocket, messToSend2);
+        sendToSocket(orderdClient.desk, messToSend2);
     }
 
 }
 
-void Sending::Get_Disconnected_Client(qintptr socket, QString IP) {
+void Sending::Get_Disconnected_Client(qintptr socket) {
 
-    mutex1.lock();
-    for (int i = 0; i < Sockets.size(); i++) {
-        if (Sockets[i]->state() != QAbstractSocket::ConnectedState) {
-            Sockets.removeAt(i);
+    ClienDataBase clientDB;
+
+    QString clientIDtoRemuve = clientDB.GetId(QString::number(socket));
+    QString clientDesktoRemuve = clientDB.GetDesk(clientIDtoRemuve);
+
+
+    for (auto i = ClientsData.begin(); i != ClientsData.end(); i++) {
+
+        QString key = i.key();
+        server::ClientInfo orderdClient = i.value();
+
+        if(key == clientIDtoRemuve){
+            continue;
         }
+
+        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE,
+                                           ClientsData[clientIDtoRemuve].desk->peerAddress().toString(),
+                                           clientDesktoRemuve,
+                                           ClientsData[clientIDtoRemuve].nick,
+                                           clientIDtoRemuve);
+
+        sendToSocket(orderdClient.desk, messToSend3);
     }
 
-    for (int i = 0; i < Sockets.size(); i++) {
 
-        Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE, IP, QString::number(socket), QString (), QString ());
-
-        sendToSocket(Sockets[i], messToSend3);
-    }
-    mutex1.unlock();
+    Sockets.removeAll(ClientsData[clientIDtoRemuve].desk);
+    ClientsData.remove(clientIDtoRemuve);
 }
 
 void Sending::sendToSocket(QTcpSocket *socket, Message message) {
@@ -102,9 +116,6 @@ void Sending::sendToSocket(QTcpSocket *socket, Message message) {
 
     qDebug() << message.registrationData.desckriptor;
 
-    if(message.id == MesageIdentifiers::MESAGE){
-        qDebug() << "MESAGE";
-    }
     socket->write(Mpack::puck(message).data());
 
     socket->flush();

@@ -20,12 +20,12 @@ public:
 private:
     server *m_server;
     QList<QTcpSocket *> Sockets;
+    QMap<QString , server::ClientInfo> ClientsData;
     Message ObjectToSend(MesageIdentifiers MESID, QString IP, QString DESCK, QString NICK, QString ID);
 
-
 public slots:
-    void Get_New_Client(QTcpSocket *socet, QList<QTcpSocket *> Sockets_reciverd, QString senderNick, QString senderId);
-    void Get_Disconnected_Client(qintptr socket, QString IP);
+    void Get_New_Client(QString new_id, QMap<QString , server::ClientInfo> &clientsData );
+    void Get_Disconnected_Client(qintptr socket);
     void sendToSocket(QTcpSocket *socket, Message message);
 };
 

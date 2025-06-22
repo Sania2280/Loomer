@@ -154,6 +154,29 @@ QString ClienDataBase::GetNick(std::string id)
     return "";
 }
 
+QString ClienDataBase::GetDesk(QString id)
+{
+
+    QJsonObject database = ReadFile(DBname);
+
+
+    for (const QString &key : database.keys()) {
+        QJsonValue value = database.value(key);
+        if (!value.isObject())
+            continue;
+
+        if (key == id) {
+            qDebug() << "Desk found";
+            QJsonObject userObj = value.toObject();
+            return userObj.value("desk").toString();
+        }
+
+
+    }
+    qDebug() << "Descriptor not found:" ;
+    return "";
+}
+
 
 int ClienDataBase::ClientID(QJsonObject database)
 {
@@ -178,7 +201,6 @@ QString ClienDataBase::GetId(QString desk)
     for (const QString& key : database.keys()) {
 
         QJsonValue value = database.value(key);
-
         QJsonObject userObj = value.toObject();
 
         if(userObj.value("desk") == desk){

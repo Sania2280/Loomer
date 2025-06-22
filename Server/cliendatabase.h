@@ -27,6 +27,7 @@ public:
 
     QString GetId(QString desk);
     QString GetNick(std::string id);
+    QString GetDesk(QString id);
     void RewriteDesk(std::string id, QString desk);
 
     QJsonObject ReadFile(QString name);

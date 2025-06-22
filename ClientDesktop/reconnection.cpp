@@ -131,6 +131,8 @@ void Reconnection::slotReadyRed()
 
     Message message = Mpack::unpack(socket->readAll().toStdString());
 
+
+
     switch (message.id) {
         case MesageIdentifiers::ID_CLIENT:
         {

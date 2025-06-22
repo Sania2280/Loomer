@@ -20,7 +20,6 @@
 
 QList<QTcpSocket *> server::Sockets;
 
-
 QMutex server::mutex;
 
 server::server(const Config::Settings& aSettings) {
@@ -54,7 +53,7 @@ void server::incomingConnection(qintptr socketDescriptor) {
         connect(socket, &QTcpSocket::disconnected, this,
                 [this, socketDescriptor, IP]() {
             qInfo() << "disconnected dest form server" << socketDescriptor;
-            emit disconnectedClient(socketDescriptor, IP);
+            emit disconnectedClient(socketDescriptor);
         });
 
     }
@@ -162,13 +161,18 @@ void server::slotsReadyRead() {
             QString nick = clientDB.GetNick(message.dbID);
             clientDB.RewriteDesk(message.dbID, QString::number(socket->socketDescriptor()));
 
-
             qDebug() << "New Deck: "<<QString::fromStdString(message.dbID);
 
-            emit newClientConnected(socket, Sockets, nick, QString::fromStdString(message.dbID));
+            ClientsData[QString::fromStdString(message.dbID)].desk = socket;
+            ClientsData[QString::fromStdString(message.dbID)].nick = nick;
+
+            emit newClientConnected(QString::fromStdString(message.dbID), ClientsData);
         }
         else if(message.id == MesageIdentifiers::RECONNECTION){
             qDebug() << "Reconnection: " << message.reconnect.desck;
         }
     }
 }
+
+
+
