@@ -20,12 +20,11 @@ MSGPACK_ADD_ENUM(MesageIdentifiers);
 
 struct MessageData
 {
-    std::string senderDesk;
-    std::string senderIpAddress;
-    std::string resivDesk;
+    std::string senderId;
+    std::string resivId;
     std::string resivIpAddress;
     std::string message;
-    MSGPACK_DEFINE(message, senderDesk, senderIpAddress, resivDesk, resivIpAddress);
+    MSGPACK_DEFINE(message, senderId, resivId, resivIpAddress);
 
 };
 
@@ -41,16 +40,16 @@ struct NewOrDeleteClientInNet
 {
     std::string descriptor;
     std::string id;
-    std::string ip;
     std::string nick;
-    MSGPACK_DEFINE(descriptor, id, ip, nick);
+    MSGPACK_DEFINE(descriptor, id, nick);
 };
 
 struct Reconnect
 {
-    std::string ip;
+    std::string id;
     std::string desck;
-    MSGPACK_DEFINE(desck, ip);
+    std::string nick;
+    MSGPACK_DEFINE(desck, id, nick);
 
 };
 

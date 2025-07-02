@@ -7,7 +7,6 @@
 #include "UserData.h"
 #include "message.h"
 #include "datasender.h"
-#include "clientdatabase.h"
 
 #include <QListWidget>
 #include <QStringBuilder>
@@ -51,10 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     messToSend.id = MesageIdentifiers::CLIENT_READY_TO_WORCK;
     messToSend.dbID = userdata.id.toStdString();
-    messToSend.messageData.senderDesk = MySocket.toStdString();
+    messToSend.messageData.senderId = MySocket.toStdString();
     qDebug() <<  "Good id: "<<messToSend.dbID;
 
-    SendToServer(messToSend);
+    SendToServerReadyFalg(messToSend);
 
 
 }
@@ -73,21 +72,24 @@ MainWindow::~MainWindow() {
 }
 
 
-void MainWindow::SendToServer(Message &message) {
+void MainWindow::SendToServerMessage(QString Nick, QString Message) {
+    DataSender dataSendler;
+    dataSendler.MessPacker(Nick, Message);
+
+}
+
+void MainWindow::SendToServerReadyFalg(Message message)
+{
     DataSender dataSendler;
     dataSendler.SendMyMasseg(message);
-
 }
 
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
 
             Message message;
-            message.id = MesageIdentifiers::MESAGE;
-            message.messageData.resivDesk = Interlocutor.toStdString();
-            message.messageData.senderDesk = MySocket.toStdString();
-            message.messageData.message = ui->lineEdit->text().toStdString();
 
+            SendToServerMessage(Interlocutor,  ui->lineEdit->text());
 
             CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
             QWidget *container = new QWidget;
@@ -109,7 +111,6 @@ void MainWindow::on_lineEdit_returnPressed() {
             ui->listWidget_2->scrollToBottom();
 
 
-            SendToServer(message);
 
         }
     ui->lineEdit->clear();
@@ -134,8 +135,9 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 }
 
 
-void MainWindow::Socket_print() {
-    for (const auto &i : userdata.Sockets) {
+void MainWindow::Socket_print(QVector<QString> Nicks) {
+
+    for (const auto &i : Nicks) {
         QList<QListWidgetItem *> item =
             ui->listWidget->findItems(i, Qt::MatchExactly);
         if (item.isEmpty()) {
@@ -147,11 +149,11 @@ void MainWindow::Socket_print() {
     }
 }
 
-void MainWindow::Socket_delete(QString socket_to_delete) {
-    qDebug() << "Soc to Del" << socket_to_delete;
+void MainWindow::Socket_delete(QString clientToDelete) {
+    qDebug() << "Soc to Del" << clientToDelete;
 
     QList<QListWidgetItem *> items =
-        ui->listWidget->findItems(socket_to_delete, Qt::MatchExactly);
+        ui->listWidget->findItems(clientToDelete, Qt::MatchExactly);
     if (!items.isEmpty()) {
         for (QListWidgetItem *item : items) {
             int row = ui->listWidget->row(item); // Получить строку элемента

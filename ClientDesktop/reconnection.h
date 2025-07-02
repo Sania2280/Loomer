@@ -54,7 +54,7 @@ private:
 
 
 signals:
-    void mainWindSocketPrint();
+    void mainWindSocketPrint(QVector<QString> Nicks);
     void mainWindSocketDelete(QString socket_to_delete);
     void mainWindPrintMessage(QString message);
     void regWindErrorWorker(MesageIdentifiers id);

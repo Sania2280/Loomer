@@ -19,6 +19,8 @@ public:
     void SendMyData(MesageIdentifiers status);
     void SendMyMasseg(Message message);
 
+    void MessPacker(QString ResNick, QString Message);
+
 };
 
 #endif // DATASENDER_H

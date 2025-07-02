@@ -79,7 +79,7 @@ void Reconnection::onConnected() {
     } else {
         Message message;
         message.id = MesageIdentifiers::RECONNECTION;
-        message.reconnect.desck = userData.desck.toStdString();
+        message.reconnect.id = userData.id.toStdString();
 
         qDebug() << "Sending old data";
         socket->write(QByteArray::fromStdString(Mpack::puck(message)));
@@ -136,18 +136,21 @@ void Reconnection::slotReadyRed()
     switch (message.id) {
         case MesageIdentifiers::ID_CLIENT:
         {
-            if (!userData.Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor)) && userData.mainWindStarted){
-                userData.Sockets.push_back(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+            if (!userData.ClientsData.contains(QString::fromStdString(message.newOrDeleteClientInNet.id)) && userData.mainWindStarted){
+                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)];
+                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)].desk = QString::fromStdString(message.newOrDeleteClientInNet.descriptor);
+                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)].nick = QString::fromStdString(message.newOrDeleteClientInNet.nick);
                 DB.AddUser(message);
-                emit mainWindSocketPrint();
+                emit mainWindSocketPrint(DB.GetAllUsersNicks());
             }
             break;
         }
         case MesageIdentifiers::ID_DELETE:
         {
-            if (userData.Sockets.contains(QString::fromStdString(message.newOrDeleteClientInNet.descriptor)) && userData.mainWindStarted){
-                userData.Sockets.removeAll(message.newOrDeleteClientInNet.descriptor);
-                emit mainWindSocketDelete(QString::fromStdString(message.newOrDeleteClientInNet.descriptor));
+            if ( userData.mainWindStarted){
+                QString nickToDelete = DB.GetNick(QString::fromStdString(message.newOrDeleteClientInNet.id));
+                qDebug() << "To Delete :" << nickToDelete;
+                emit mainWindSocketDelete(nickToDelete);
             }
             break;
         }
@@ -175,7 +178,6 @@ void Reconnection::slotReadyRed()
         case MesageIdentifiers::LOGIN_FAIL_NAME:
         {
             if(!userData.mainWindStarted){
-                qDebug() << "Error name";
                 emit regWindErrorWorker(MesageIdentifiers::LOGIN_FAIL_NAME);
             }
             break;
@@ -199,6 +201,8 @@ void Reconnection::slotReadyRed()
                 emit regWindow->CloseWindow();
             }
         }
+        case MesageIdentifiers::RECONNECTION:{}
+
         case MesageIdentifiers::SIGN_SEC:{}
 
 
@@ -206,7 +210,6 @@ void Reconnection::slotReadyRed()
         case MesageIdentifiers::SIGN:{}
         case MesageIdentifiers::NONE:{}
         case MesageIdentifiers::ID_MY:{}
-        case MesageIdentifiers::RECONNECTION:{}
         case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
             default:
         break;

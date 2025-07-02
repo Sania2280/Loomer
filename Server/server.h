@@ -22,17 +22,15 @@ private slots:
 public:
     server(const Config::Settings& aSettings);
     void setSending(Sending &sending);
+
     struct ClientInfo
     {
-        QTcpSocket* desk;
+        QTcpSocket* socket;
         QString nick;
     };
 
-
-    static QList <QTcpSocket*> Sockets;
-
     QMap<QString , ClientInfo> ClientsData;
-    static QList<QTcpSocket *> TempSockets;
+
 private:
     static QMutex mutex;
 
@@ -41,9 +39,10 @@ private:
     QHostAddress::SpecialAddress addressEnum;
 
 signals:
-    void newClientConnected(QString id, QMap<QString , ClientInfo> &ClientsData);
+    void sendingClientData(MesageIdentifiers mesId, QString id, QMap<QString , ClientInfo> &ClientsData);
     void disconnectedClient(qintptr socet);
-    void sendingMesage(QTcpSocket *socket, Message &message);
+    void sendingMesage(QString id, Message &message);
+    void sendingLogInData(QTcpSocket* socket, Message &message);
 };
 
 #endif // SERVER_H

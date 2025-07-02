@@ -27,7 +27,6 @@ void ClienDataBase::CreateateDB()
 
 ClienDataBase::LogInStruct ClienDataBase::LogIn(QString nick, QString pass)
 {
-    qDebug() << "Log In";
 
     QJsonObject database = ReadFile(DBname);
 
@@ -143,7 +142,6 @@ QString ClienDataBase::GetNick(std::string id)
             continue;
 
         if (key == QString::fromStdString(id)) {
-            qDebug() << "Nick found";
             QJsonObject userObj = value.toObject();
             return userObj.value("nick").toString();
         }
@@ -229,7 +227,6 @@ void ClienDataBase::RewriteDesk(std::string id, QString desk)
         if (file.open(QIODevice::WriteOnly)) {
             file.write(QJsonDocument(database).toJson(QJsonDocument::Indented));
             file.close();
-            qDebug() << "Desk rewritten successfully.";
         } else {
             qWarning() << "Failed to open DB for writing.";
         }

@@ -26,7 +26,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QString Get_Path(Directorys file, Files directory);
-    void SendToServer(Message &message);
+    void SendToServerMessage(QString Nick, QString Message);
+    void SendToServerReadyFalg(Message message);
 
 private slots:
     void on_pushButton_clicked();
@@ -37,8 +38,8 @@ private slots:
 
 public slots:
 
-    void Socket_print();
-    void Socket_delete(QString socket_to_delete);
+    void Socket_print(QVector<QString> Nicks);
+    void Socket_delete(QString clientToDelete);
     void PrintMassage(QString massage);
 
 private:

@@ -6,8 +6,6 @@
 #include <QTcpSocket>
 
 
-
-
 class MainWindow;
 class DataSender;
 

@@ -13,7 +13,11 @@ public:
     void CreateDBfirst(QString desk);
     void AddUser(Message mesege);
 
-    QString GetNick();
+    QVector<QString> GetAllUsersNicks();
+    QJsonObject ReadFile(QString name);
+
+    QString GetNick(QString id);
+    QString GetId(QString Nick);
 
 };
 
