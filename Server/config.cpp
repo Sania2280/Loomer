@@ -3,7 +3,7 @@
 #include <QTcpSocket>
 #include <QFile>
 
-#include "Config.hpp"
+#include "config.hpp"
 
 Config::Config(std::string_view aFilePath)
     : filePath{aFilePath}

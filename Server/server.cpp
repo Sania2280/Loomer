@@ -6,7 +6,6 @@
 #include "server.h"
 #include "sending.h"
 #include "enums.h"
-#include "Config.hpp"
 #include "cliendatabase.h"
 #include"message.h"
 
@@ -18,8 +17,6 @@
 #include <QCoreApplication>
 
 #include "Mpack.hpp"
-
-QList<QTcpSocket *> server::Sockets;
 
 
 QMutex server::mutex;
@@ -35,9 +32,10 @@ server::server(const Config::Settings& aSettings) {
 
 void server::setSending(Sending &sending) {
     sendingPtr = &sending;
-    connect(this, &server::newClientConnected, sendingPtr, &Sending::Get_New_Client);
-    connect(this, &server::disconnectedClient, sendingPtr, &Sending::Get_Disconnected_Client);
-    connect(this, &server::sendingMesage, sendingPtr, &Sending::sendToSocket);
+    connect(this, &server::sendingClientData, sendingPtr, &Sending::MessagePacker);
+    connect(this, &server::disconnectedClient, sendingPtr, &Sending::GetDisconnectedClient);
+    connect(this, &server::sendingMesage, sendingPtr, &Sending::SendToSocket);
+    connect(this, &server::sendingLogInData, sendingPtr, &Sending::SendToSocketLogInData);
 }
 
 void server::incomingConnection(qintptr socketDescriptor) {
@@ -47,7 +45,6 @@ void server::incomingConnection(qintptr socketDescriptor) {
         qInfo() << "Client connected from IP:" << clientIP
                  << "with deck:" << socketDescriptor;
 
-        Sockets.push_back(socket);
 
         QString IP = socket->peerAddress().toString();
 
@@ -55,79 +52,83 @@ void server::incomingConnection(qintptr socketDescriptor) {
         connect(socket, &QTcpSocket::disconnected, this,
                 [this, socketDescriptor, IP]() {
             qInfo() << "disconnected dest form server" << socketDescriptor;
-            emit disconnectedClient(socketDescriptor, IP);
+            emit disconnectedClient(socketDescriptor);
         });
 
     }
 }
 
 void server::slotsReadyRead() {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    QTcpSocket *  socket = qobject_cast<QTcpSocket *>(sender());
     if (socket) {
 
         qInfo() << "Reading data...";
+        ClienDataBase clientDB;
         Message message = Mpack::unpack(socket->readAll().toStdString());
+        QString id = clientDB.GetId(QString::number(socket->socketDescriptor()));
 
         if (message.id == MesageIdentifiers::MESAGE) {
-            QTcpSocket *RESIVER = nullptr; // Указатель на сокет получателя
-            QTcpSocket *SENDER = nullptr; // Указатель на сокет отправителя
+            QString RESIVER = nullptr; // Указатель на сокет получателя
+            QString SENDER = nullptr; // Указатель на сокет отправителя
 
-            for (int i = 0; i < Sockets.size(); ++i) {
-                if (Sockets[i]->socketDescriptor() == std::stoll(message.messageData.resivDesk)){
-                    RESIVER = Sockets[i];
+            for (auto  i = ClientsData.begin(); i != ClientsData.end(); i++) {
+                if (i.key() == message.messageData.resivId){
+                    RESIVER = i.key();
                 }
-                if (Sockets[i]->socketDescriptor() == std::stoll(message.messageData.senderDesk)){
-                    SENDER = Sockets[i];
+                if (i.key() == message.messageData.senderId){
+                    SENDER = i.key();
                 }
             }
 
             QByteArray data;
             QDataStream out(&data, QIODevice::WriteOnly);
-            out.setVersion(QDataStream::Qt_6_0);      
+            out.setVersion(QDataStream::Qt_6_0);
 
             Message messToSend;
             messToSend.id = MesageIdentifiers::MESAGE;
-            messToSend.messageData.senderDesk = QString::number(SENDER->socketDescriptor()).toStdString();
+            messToSend.messageData.senderId = SENDER.toStdString();
             messToSend.messageData.message = message.messageData.message;
 
             emit sendingMesage(RESIVER, messToSend);
         }
         else if(message.id == MesageIdentifiers::LOG){
 
-            ClienDataBase clientDB;
-            MesageIdentifiers logInFlag = clientDB.LogIn(QString::fromStdString(message.registrationData.nickName),
-                                               QString::fromStdString(message.registrationData.pass));
+            ClienDataBase::LogInStruct logInStruct = ClienDataBase::LogInStruct();
+            logInStruct = clientDB.LogIn(QString::fromStdString(message.registrationData.nick),
+                                        QString::fromStdString(message.registrationData.pass));
 
-            if(logInFlag != MesageIdentifiers::LOGIN_FAIL_NAME && logInFlag != MesageIdentifiers::LOGIN_FAIL_PASS){
+
+            if(logInStruct.mesID != MesageIdentifiers::LOGIN_FAIL_NAME && logInStruct.mesID != MesageIdentifiers::LOGIN_FAIL_PASS){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_SEC;
-                messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
+                // messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
+                messToSend.registrationData.id = logInStruct.clientID.toStdString();
 
-                qDebug() << "New desk: " << socket->socketDescriptor();
-
-                emit sendingMesage(socket, messToSend);
+                emit sendingLogInData(socket, messToSend);
             }
-            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_NAME){
+            else if(logInStruct.mesID == MesageIdentifiers::LOGIN_FAIL_NAME){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_NAME;
 
-                qInfo() << "Log in fail NAME: " << message.registrationData.nickName;
-                emit sendingMesage(socket, messToSend);
+                qInfo() << "Log in fail NAME: " << message.registrationData.nick;
+
+                emit sendingLogInData(socket, messToSend);
             }
-            else if(logInFlag == MesageIdentifiers::LOGIN_FAIL_PASS){
+            else if(logInStruct.mesID == MesageIdentifiers::LOGIN_FAIL_PASS){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_FAIL_PASS;
 
-                qDebug() << "Log in fail PASS : " << socket->socketDescriptor();
-                emit sendingMesage(socket, messToSend);
+                qInfo() << "Log in fail PASS : " << socket->socketDescriptor();
+
+                emit sendingLogInData(socket, messToSend);
             }
+
         }
         else if(message.id == MesageIdentifiers::SIGN){
-            ClienDataBase clientDB;
-            MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nickName),
+            MesageIdentifiers sginUpFlag = clientDB.SingUp(QString::fromStdString(message.registrationData.nick),
                                                            QString::fromStdString(message.registrationData.pass),
                                                            static_cast<int>(socket->socketDescriptor()));
 
@@ -136,24 +137,54 @@ void server::slotsReadyRead() {
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_SEC;
 
-                emit sendingMesage(socket, messToSend);
+                emit sendingLogInData(socket, messToSend);
             }
             else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_FAIL;
 
-                emit sendingMesage(socket, messToSend);
+                emit sendingLogInData(socket, messToSend);
             }
             else if(sginUpFlag == MesageIdentifiers::SIGN_FAIL_EXIST){
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::SIGN_FAIL_EXIST;
-                emit sendingMesage(socket, messToSend);
+
+                emit sendingLogInData(socket, messToSend);
             }
         }
-        else if(message.id== MesageIdentifiers::CLIENT_READY_TO_WORCK){
-            emit newClientConnected(socket, Sockets);
+        else if(message.id == MesageIdentifiers::CLIENT_READY_TO_WORCK){
+
+            QString nick = clientDB.GetNick(message.dbID);
+            clientDB.RewriteDesk(message.dbID, QString::number(socket->socketDescriptor()));
+
+            ClientsData[QString::fromStdString(message.dbID)].socket = socket;
+            ClientsData[QString::fromStdString(message.dbID)].nick = nick;
+
+            emit sendingClientData(MesageIdentifiers::CLIENT_READY_TO_WORCK, QString::fromStdString(message.dbID), ClientsData);
+        }
+        else if(message.id == MesageIdentifiers::RECONNECTION){
+            qDebug() << "Reconnection: " << message.reconnect.desck;
+
+            if (!ClientsData.contains(QString::fromStdString(message.reconnect.id))){
+                ClientsData[QString::fromStdString(message.reconnect.id)].nick = clientDB.GetNick(message.reconnect.id);
+                ClientsData[QString::fromStdString(message.reconnect.id)].socket = socket;
+
+                clientDB.RewriteDesk(message.reconnect.id, QString::number(socket->socketDescriptor()));
+
+                Message messageToSend;
+                messageToSend.reconnect.nick = ClientsData[QString::fromStdString(message.reconnect.id)].nick.toStdString();
+                messageToSend.reconnect.id = message.reconnect.id;
+                emit sendingClientData(MesageIdentifiers::RECONNECTION, QString::fromStdString(message.reconnect.id), ClientsData);
+
+            }
+            else{
+                qWarning() << "User Exist";
+            }
         }
     }
 }
+
+
+

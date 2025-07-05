@@ -2,7 +2,7 @@
 
 #include "server.h"
 #include "sending.h"
-#include "Config.hpp"
+#include "config.hpp"
 
 #include <QFile>
 

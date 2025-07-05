@@ -1,23 +1,28 @@
 #include <QApplication>
+
 #include "mainwindow.h"
+#include "reconnection.h"
 #include "regwindow.h"
-#include "UserData.h"
+#include "QObject"
+
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-
-    // UserData& userdata = UserData::getInstance();
-
+    Reconnection& reconnection = *Reconnection::getInterface();
     RegWindow* regwindow = new RegWindow();
-    regwindow->show();
+
+    reconnection.setRegwind(regwindow);
+    regwindow->show();        
 
     int regwindresult = app.exec();
 
-
     if (regwindresult == 0) {
+        regwindow->close();
         delete regwindow;
+
         MainWindow mainwindow;
+        reconnection.setMainWind(&mainwindow);
         mainwindow.show();
         return app.exec();
     }

@@ -19,12 +19,20 @@ public:
      QString pass;
      QString e_male;
      QString desck;
+     QString id;
      RegWind status;
+
      bool mainWindStarted;
 
+     struct ClientInfo
+     {
+         QString desk;
+         QString nick;
+     };
+
+     QMap<QString , ClientInfo> ClientsData;
 
      void setSocket(QTcpSocket* socket) ;
-
      QTcpSocket* getSocket() const { return UserSocket; }
 
 private:

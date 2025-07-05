@@ -1,0 +1,39 @@
+#regwindow {
+    background-color: rgb(32, 43, 54);
+}
+
+/* Стиль для QLineEdit */
+QLineEdit {
+    background-color: lightblue;
+    border-radius: 10px;
+    padding-left: 5px;
+    min-height: 25;
+}
+
+/* Стиль для обеих кнопок */
+#pushButton_Log_in, #pushButton_Sing_up, #pushButton_end {
+    background-color: lightblue;
+    border-radius: 7px;
+}
+
+#pushButton_Log_in:hover, #pushButton_Sing_up:hover, #pushButton_end:hover, pushButton_return:hover {
+    background-color: rgb(103, 198, 242); /* Темнее синий */
+}
+
+#pushButton_Log_in:pressed , #pushButton_Sing_up:pressed , #pushButton_end:pressed, pushButton_return:pressed {
+    background-color: rgb(0, 91, 170); /* Темнее синий */
+}
+
+#label {
+    font-size: 16px; 
+    color: white;
+}
+
+QListWidget#listWidget_errors{
+    background-color: rgb(32, 43, 54);
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-style: italic;
+
+}

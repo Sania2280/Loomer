@@ -19,14 +19,15 @@ public:
 
 private:
     server *m_server;
-    QList<QTcpSocket *> Sockets;
-    Message ObjectToSend(MesageIdentifiers ID, QString IP, QString DESCK);
-
+    QString MesType(MesageIdentifiers id);
+    QMap<QString , server::ClientInfo> ClientsData;
+    Message ObjectToSend(MesageIdentifiers MESID, QString IP, QString ID, bool stat);
 
 public slots:
-    void Get_New_Client(QTcpSocket *socet, QList<QTcpSocket *> Sockets_reciverd);
-    void Get_Disconnected_Client(qintptr socket, QString IP);
-    void sendToSocket(QTcpSocket *socket, Message message);
+    void GetDisconnectedClient(qintptr socket);
+    void SendToSocket(QString socket, Message &message);
+    void SendToSocketLogInData(QTcpSocket* socket, Message &message);
+    void MessagePacker(MesageIdentifiers mesId, QString newId,  QMap<QString , server::ClientInfo> &clientsData);
 };
 
 #endif // SENDING_H

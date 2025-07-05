@@ -6,16 +6,12 @@
 #include <QList>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "Config.hpp"
+#include "config.hpp"
 
 class Sending;
 
 class server : public QTcpServer {
     Q_OBJECT
-
-public:
-    server(const Config::Settings& aSettings);
-    void setSending(Sending &sending);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -24,8 +20,17 @@ private slots:
     void slotsReadyRead();
 
 public:
-    static QList<QTcpSocket *> Sockets;
-    static QList<QTcpSocket *> TempSockets;
+    server(const Config::Settings& aSettings);
+    void setSending(Sending &sending);
+
+    struct ClientInfo
+    {
+        QTcpSocket* socket;
+        QString nick;
+    };
+
+    QMap<QString , ClientInfo> ClientsData;
+
 private:
     static QMutex mutex;
 
@@ -34,9 +39,10 @@ private:
     QHostAddress::SpecialAddress addressEnum;
 
 signals:
-    void newClientConnected(QTcpSocket *socet, QList<QTcpSocket *> &Sockets);
-    void disconnectedClient(qintptr socet, QString IP);
-    void sendingMesage(QTcpSocket *socket, Message &message);
+    void sendingClientData(MesageIdentifiers mesId, QString id, QMap<QString , ClientInfo> &ClientsData);
+    void disconnectedClient(qintptr socet);
+    void sendingMesage(QString id, Message &message);
+    void sendingLogInData(QTcpSocket* socket, Message &message);
 };
 
 #endif // SERVER_H

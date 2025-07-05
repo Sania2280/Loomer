@@ -20,28 +20,36 @@ MSGPACK_ADD_ENUM(MesageIdentifiers);
 
 struct MessageData
 {
-    std::string senderDesk;
-    std::string senderIpAddress;
-    std::string resivDesk;
+    std::string senderId;
+    std::string resivId;
     std::string resivIpAddress;
     std::string message;
-    MSGPACK_DEFINE(message, senderDesk, senderIpAddress, resivDesk, resivIpAddress);
+    MSGPACK_DEFINE(message, senderId, resivId, resivIpAddress);
 
 };
 
 struct RegistrationData
-{
-    std::string nickName;
+{   std::string id;
+    std::string nick;
     std::string pass;
-    std::string desckriptor;
-    MSGPACK_DEFINE(nickName, pass, desckriptor );
+    MSGPACK_DEFINE(id, nick, pass );
 };
 
 struct NewOrDeleteClientInNet
 {
-    std::string descriptor;
-    std::string ip;
-    MSGPACK_DEFINE(descriptor, ip);
+    std::string id;
+    std::string nick;
+    bool stat;
+    MSGPACK_DEFINE(id, nick, stat);
+};
+
+struct Reconnect
+{
+    std::string id;
+    std::string desck;
+    std::string nick;
+    MSGPACK_DEFINE(desck, id, nick);
+
 };
 
 struct Message
@@ -49,12 +57,14 @@ struct Message
     Message() {}
 
     MesageIdentifiers id = MesageIdentifiers::NONE;
+    std::string dbID;
 
     MessageData messageData ;
+    Reconnect reconnect;
     RegistrationData registrationData;
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
-    MSGPACK_DEFINE(id, messageData, registrationData, newOrDeleteClientInNet);
+    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect);
 };
 
 

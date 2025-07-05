@@ -26,25 +26,24 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QString Get_Path(Directorys file, Files directory);
-    void SendToServer(Message &message);
+    void SendToServerMessage(QString Nick, QString Message);
+    void SendToServerReadyFalg(Message message);
 
 private slots:
-    void slotReadyRead();
     void on_pushButton_clicked();
     void on_lineEdit_returnPressed();
 
     void on_listWidget_itemClicked(QListWidgetItem *item);
 
-    void onConnected();
-    void onError(QAbstractSocket::SocketError error);
-    void onDisconnected();
-    void setupConnection();
 
+public slots:
+
+    void Socket_print(QVector<QString> Nicks);
+    void Socket_delete(QString clientToDelete);
+    void PrintMassage(QString massage);
 
 private:
     void extracted();
-    void Socket_print();
-    void Socket_delete(QString socket_to_delete);
     void Read_Config(QTcpSocket *socket);
     QString Style_Sheete();
 
@@ -57,6 +56,8 @@ private:
     QVector<QString> Sockets;
 
     bool Close_Window_stat = false;
+    QByteArray buffer;
+
 
 protected:
     void closeEvent(QCloseEvent *event) override;

@@ -18,12 +18,13 @@ void setComunication::workInThread()
     }
 }
 
-void setComunication::fromMain(server *s)
+void setComunication::fromMain(server *server)
 {
-    // qDebug() << "From Main:";
-    Sockets.clear(); // Очистить старые данные
-    for (auto socket : s->Sockets) {
-        Sockets.append(socket); // Используем append, а не присвоение
-        qDebug() << socket;
-    }
+    qDebug()  << server->serverAddress();
+    // // qDebug() << "From Main:";
+    // Sockets.clear(); // Очистить старые данные
+    // for (auto socket : server->Sockets) {
+    //     Sockets.append(socket); // Используем append, а не присвоение
+    //     qDebug() << socket;
+    // }
 }
