@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setStyleSheet(Style_Sheete());
 
-    setWindowTitle(userdata.name + " / " + MySocket + " / " + userdata.id);
+    setWindowTitle(userdata.name + " / " +  userdata.id);
 
     QIcon buton_icon("./images/send.png");
     ui->pushButton->setIcon(buton_icon);

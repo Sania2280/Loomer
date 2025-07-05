@@ -25,14 +25,11 @@ Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
 
 
-
-
-
 void Sending::MessagePacker(MesageIdentifiers mesId, QString newId, QMap<QString, server::ClientInfo> &clientsData)
 {
     ClientsData = clientsData;
 
-    QThread::msleep(100);
+    QThread::msleep(150);
 
 
         for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
@@ -70,7 +67,8 @@ void Sending::MessagePacker(MesageIdentifiers mesId, QString newId, QMap<QString
 
             Message messToSend1 = ObjectToSend(MesidToSentd,
                                                key,
-                                               orderdClient.nick);
+                                               orderdClient.nick,
+                                               true);
 
 
             SendToSocket(newId, messToSend1);
@@ -80,7 +78,8 @@ void Sending::MessagePacker(MesageIdentifiers mesId, QString newId, QMap<QString
 
             Message messToSend2 = ObjectToSend(MesidToSentd,
                                                newId,
-                                               ClientsData[newId].nick);
+                                               ClientsData[newId].nick,
+                                               true);
 
             SendToSocket(key, messToSend2);
         }
@@ -105,7 +104,8 @@ void Sending::GetDisconnectedClient(qintptr socket) {
 
         Message messToSend3 = ObjectToSend(MesageIdentifiers::ID_DELETE,
                                            clientIDtoRemuve,
-                                           QString());
+                                           QString(),
+                                           false);
 
         qDebug() <<"To delete" <<  clientIDtoRemuve;
 
@@ -156,12 +156,12 @@ void Sending::SendToSocketLogInData(QTcpSocket *socket, Message &message)
 
     socket->write(Mpack::puck(message).data());
 
-    socket->flush();
+    // socket->flush();
 
 }
 
 
-Message Sending::ObjectToSend(MesageIdentifiers MESID, QString ID, QString NICK)
+Message Sending::ObjectToSend(MesageIdentifiers MESID, QString ID, QString NICK, bool stat)
 {
     Message messToSend;
 
@@ -171,6 +171,7 @@ Message Sending::ObjectToSend(MesageIdentifiers MESID, QString ID, QString NICK)
     messToSend.id = MESID;
     messToSend.newOrDeleteClientInNet.id = ID.toStdString();
     messToSend.newOrDeleteClientInNet.nick = NICK.toStdString();
+    messToSend.newOrDeleteClientInNet.stat = stat;
 
 
     return messToSend;

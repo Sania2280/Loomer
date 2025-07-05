@@ -102,7 +102,7 @@ void server::slotsReadyRead() {
 
                 Message messToSend;
                 messToSend.id = MesageIdentifiers::LOGIN_SEC;
-                messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
+                // messToSend.registrationData.desckriptor = QString::number(socket->socketDescriptor()).toStdString();
                 messToSend.registrationData.id = logInStruct.clientID.toStdString();
 
                 emit sendingLogInData(socket, messToSend);

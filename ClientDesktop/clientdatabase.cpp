@@ -32,44 +32,24 @@ void ClientDataBase::CreateDB()
     }
 }
 
-void ClientDataBase::CreateDBfirst(QString desk)
-{
-    QString filename = "users" + desk + ".json";
-    QFile file(filename);
-}
+
 
 void ClientDataBase::AddUser(Message mesege)
 {
     qDebug() << fileName;
     QFile file(fileName);
 
-    QJsonObject database;
+    QJsonObject database = ReadFile(fileName);
 
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument oldDoc = QJsonDocument::fromJson(file.readAll());
-        file.close();
-        database = oldDoc.object();
-    } else {
-        CreateDB(); // создаём пустой JSON-файл, если он не существует
-        AddUser(mesege); // повторный вызов после создания файла
-        return;
-    }
 
     QString userID = QString::fromStdString(mesege.newOrDeleteClientInNet.id);
 
-    if (database.contains(userID)) {
-        qWarning() << "User already exists. Skipping addition.";
-        return;
-    }
 
-    if(database.contains(UserData::getInstance().id)){
-        qWarning() << "User already exists. Skipping addition.";
-        return;
-    }
 
     // Создаём нового пользователя
     QJsonObject newUser;
     newUser["nick"] = QString::fromStdString(mesege.newOrDeleteClientInNet.nick);
+    newUser["stat"] = true;
 
     database[userID] = newUser;
 
@@ -82,23 +62,37 @@ void ClientDataBase::AddUser(Message mesege)
     }
 }
 
+void ClientDataBase::ChangeUserStat(QString id)
+{
+   QJsonObject database = ReadFile(fileName);
+
+    for (const QString & key : database.keys()) {
+
+        QJsonValue value = database.value(key);
+        QJsonObject userObj = value.toObject();
+
+        if(key == id){
+            userObj["stat"] = false;
+            database[key] = userObj;
+            break;
+        }
+    }
+
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(database).toJson(QJsonDocument::Indented));
+        file.close();
+        qDebug() << "User added successfully";
+    } else {
+        qWarning() << "Failed to open file for writing";
+    }
+}
+
 QVector<QString> ClientDataBase::GetAllUsersNicks()
 {
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error opening DB for reading.";
-    }
 
-    QByteArray data = file.readAll();
-    file.close();
 
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-
-    if (doc.isNull() || !doc.isObject()) {
-        qWarning() << "Invalid JSON format.";
-    }
-
-    QJsonObject database = doc.object();
+    QJsonObject database = ReadFile(fileName);
 
     QVector<QString> Nicks;
 
@@ -107,7 +101,9 @@ QVector<QString> ClientDataBase::GetAllUsersNicks()
         QJsonValue value = database.value(key);
         QJsonObject userObj = value.toObject();
 
-        Nicks.push_back(userObj.value("nick").toString());
+        if(userObj.value("stat") == true){
+            Nicks.push_back(userObj.value("nick").toString());
+        }
     }
 
     return Nicks;

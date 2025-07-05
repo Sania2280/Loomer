@@ -10,8 +10,8 @@ public:
     ClientDataBase();
 
     void CreateDB();
-    void CreateDBfirst(QString desk);
     void AddUser(Message mesege);
+    void ChangeUserStat(QString id);
 
     QVector<QString> GetAllUsersNicks();
     QJsonObject ReadFile(QString name);

@@ -136,10 +136,8 @@ void Reconnection::slotReadyRed()
     switch (message.id) {
         case MesageIdentifiers::ID_CLIENT:
         {
-            if (!userData.ClientsData.contains(QString::fromStdString(message.newOrDeleteClientInNet.id)) && userData.mainWindStarted){
-                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)];
-                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)].desk = QString::fromStdString(message.newOrDeleteClientInNet.descriptor);
-                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.descriptor)].nick = QString::fromStdString(message.newOrDeleteClientInNet.nick);
+            if ( userData.mainWindStarted){
+                userData.ClientsData[QString::fromStdString(message.newOrDeleteClientInNet.id)].nick = QString::fromStdString(message.newOrDeleteClientInNet.nick);
                 DB.AddUser(message);
                 emit mainWindSocketPrint(DB.GetAllUsersNicks());
             }
@@ -149,7 +147,8 @@ void Reconnection::slotReadyRed()
         {
             if ( userData.mainWindStarted){
                 QString nickToDelete = DB.GetNick(QString::fromStdString(message.newOrDeleteClientInNet.id));
-                qDebug() << "To Delete :" << nickToDelete;
+                DB.ChangeUserStat(QString::fromStdString(message.newOrDeleteClientInNet.id));
+                qDebug() << "To Delete :" << QString::fromStdString(message.newOrDeleteClientInNet.id);
                 emit mainWindSocketDelete(nickToDelete);
             }
             break;
@@ -192,12 +191,8 @@ void Reconnection::slotReadyRed()
         case MesageIdentifiers::LOGIN_SEC:
         {
             if(!userData.mainWindStarted){
-                qDebug()<< "Got desk: " << message.registrationData.desckriptor;
-                userData.desck = QString::fromStdString(message.registrationData.desckriptor);
                 userData.id = QString::fromStdString(message.registrationData.id);
-
                 DB.CreateDB();
-                qDebug() << "desk" << userData.desck;
                 emit regWindow->CloseWindow();
             }
         }

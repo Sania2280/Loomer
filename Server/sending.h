@@ -21,7 +21,7 @@ private:
     server *m_server;
     QString MesType(MesageIdentifiers id);
     QMap<QString , server::ClientInfo> ClientsData;
-    Message ObjectToSend(MesageIdentifiers MESID, QString IP, QString ID);
+    Message ObjectToSend(MesageIdentifiers MESID, QString IP, QString ID, bool stat);
 
 public slots:
     void GetDisconnectedClient(qintptr socket);

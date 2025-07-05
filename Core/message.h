@@ -32,16 +32,15 @@ struct RegistrationData
 {   std::string id;
     std::string nick;
     std::string pass;
-    std::string desckriptor;
-    MSGPACK_DEFINE(id, nick, pass, desckriptor );
+    MSGPACK_DEFINE(id, nick, pass );
 };
 
 struct NewOrDeleteClientInNet
 {
-    std::string descriptor;
     std::string id;
     std::string nick;
-    MSGPACK_DEFINE(descriptor, id, nick);
+    bool stat;
+    MSGPACK_DEFINE(id, nick, stat);
 };
 
 struct Reconnect
