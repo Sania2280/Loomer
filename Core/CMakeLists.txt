@@ -17,6 +17,17 @@ FetchContent_Declare(
     GIT_TAG        cpp-7.0.0)
 FetchContent_MakeAvailable(msgpack-cxx)
 
+FetchContent_Declare(
+    libsodium
+    GIT_REPOSITORY https://github.com/jedisct1/libsodium.git
+    GIT_TAG 1.0.19
+)
+
+FetchContent_MakeAvailable(libsodium)
+
+message(STATUS "libsodium source dir: ${libsodium_SOURCE_DIR}")
+
+
 add_library(Core STATIC
   Mpack.hpp
   Mpack.cpp
@@ -27,6 +38,8 @@ add_library(Core STATIC
 target_include_directories(Core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${libsodium_SOURCE_DIR}/src/libsodium/include
+
 )
 
 target_link_libraries(Core
@@ -35,6 +48,7 @@ target_link_libraries(Core
 
     PUBLIC
         msgpack-cxx
+        libsodium
 )
 
 target_compile_definitions(Core PRIVATE CORE_LIBRARY)

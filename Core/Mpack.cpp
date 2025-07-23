@@ -1,5 +1,5 @@
 #include "Mpack.hpp"
-
+#include "sodium.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
