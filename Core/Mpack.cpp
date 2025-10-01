@@ -1,4 +1,5 @@
 #include "Mpack.hpp"
+#include "sodium.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -28,19 +29,20 @@ Message Mpack::unpackMes(std::string rawData) {
     return data;
 }
 
-std::string Mpack::puckKey(KeySending &rawData)
+std::string Mpack::puckKey(CryptoEnum &rawData)
 {
     msgpack::sbuffer buffer;
     msgpack::pack(buffer, rawData);
     return std::string(buffer.data(), buffer.size());
 }
 
-Message Mpack::unpackKey(std::string rawData)
+CryptoEnum Mpack::unpackKey(std::string rawData)
 {
+
     msgpack::object_handle oh = msgpack::unpack(rawData.data(), rawData.size());
     msgpack::object obj = oh.get();
 
-    Message data;
+    CryptoEnum data;
     obj.convert(data);
     return data;
 }

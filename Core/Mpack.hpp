@@ -12,5 +12,5 @@ public:
     static Message unpackMes(std::string rawData);
 
     static std::string puckKey(KeySending &rawData);
-    static Message unpackKey(std::string rawData);
+    static CryptoEnum unpackKey(std::string rawData);
 };

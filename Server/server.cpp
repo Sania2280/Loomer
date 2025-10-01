@@ -64,7 +64,7 @@ void server::slotsReadyRead() {
 
         qInfo() << "Reading data...";
         ClienDataBase clientDB;
-        Message message = Mpack::unpackMes(socket->readAll().toStdString());
+        Message message = Mpack::unpack(socket->readAll().toStdString());
         QString id = clientDB.GetId(QString::number(socket->socketDescriptor()));
 
         if (message.id == MesageIdentifiers::MESAGE) {

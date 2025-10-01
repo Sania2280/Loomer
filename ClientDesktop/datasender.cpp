@@ -35,8 +35,6 @@ void DataSender::SendMyMasseg(Message message)
     if (userData.getSocket()->state() == QAbstractSocket::ConnectedState) {
         userData.getSocket()->write(Mpack::puckMes(message).data());
 
-        qDebug() << "Mes sended";
-
 
         if (!userData.getSocket()->waitForBytesWritten(5000)) {
             qWarning() << "Sending data error:" << userData.getSocket()->errorString();
@@ -77,11 +75,11 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
 void DataSender::SendOpenKey(QString id, std::vector<unsigned char> openKey)
 {
     KeySending keysrnding;
-    keysrnding.idKey = CryptoEnum::OPENKEY;
+    keysrnding.id = CryptoEnum::OPENKEY;
     keysrnding.key.id = id.toStdString();
     keysrnding.key.key = openKey;
 
-    // SendMyKey(keysrnding);
+    SendMyKey(keysrnding);
 
 }
 

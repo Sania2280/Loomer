@@ -82,7 +82,7 @@ void Reconnection::onConnected() {
         message.reconnect.id = userData.id.toStdString();
 
         qDebug() << "Sending old data";
-        socket->write(QByteArray::fromStdString(Mpack::puckMes(message)));
+        socket->write(QByteArray::fromStdString(Mpack::puck(message)));
     }
 }
 
@@ -129,8 +129,7 @@ void Reconnection::setConnection() {
 void Reconnection::slotReadyRed()
 {
 
-
-    Message message = Mpack::unpackMes(socket->readAll().toStdString());
+    Message message = Mpack::unpack(socket->readAll().toStdString());
 
 
 

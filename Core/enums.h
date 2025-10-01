@@ -45,11 +45,10 @@ enum class ConnectionStat{
 };
 
 enum class CryptoEnum{
-    OPENKEY,
-    NON
+    NON,
+    OPENKEY
 };
 
 Q_DECLARE_METATYPE(MesageIdentifiers)
-Q_DECLARE_METATYPE(CryptoEnum)
 
 #endif // ENUMS_H

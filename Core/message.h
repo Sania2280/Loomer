@@ -52,26 +52,9 @@ struct Reconnect
 
 };
 
-struct Key
-{
-    std::string id;
-    std::vector<unsigned char> key;
-    MSGPACK_DEFINE(id, key);
-};
-
-struct KeySending
-{
-    Key key;
-    CryptoEnum idKey = CryptoEnum::NON;
-
-    MSGPACK_DEFINE( key);
-};
-
 struct Message
 {
     Message() {}
-
-    Key key;
 
     MesageIdentifiers id = MesageIdentifiers::NONE;
     std::string dbID;
@@ -81,10 +64,23 @@ struct Message
     RegistrationData registrationData;
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
-    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect, key);
+    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect);
 
 };
 
 
+struct Key
+{
+    std::string id;
+    std::vector<unsigned char> key;
+    MSGPACK_DEFINE(id, key);
+};
+struct KeySending
+{
+    CryptoEnum id = CryptoEnum::NON;
+    Key key;
+
+    MSGPACK_DEFINE(id, key);
+};
 
 #endif // MESSAGE_H
