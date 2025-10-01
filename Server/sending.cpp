@@ -134,7 +134,7 @@ void Sending::SendToSocket(QString id, Message &message) {
     }
 
 
-    ClientsData[id].socket->write(Mpack::puck(message).data());
+    ClientsData[id].socket->write(Mpack::puckMes(message).data());
 
     ClientsData[id].socket->flush();
 
@@ -154,7 +154,7 @@ void Sending::SendToSocketLogInData(QTcpSocket *socket, Message &message)
         return;
     }
 
-    socket->write(Mpack::puck(message).data());
+    socket->write(Mpack::puckMes(message).data());
 
     // socket->flush();
 
