@@ -5,7 +5,6 @@
 #include "clientdatabase.h"
 #include "message.h"
 
-#include "enums.h"
 extern UserData &userData ;
 
 DataSender::DataSender(QObject *parent) :
@@ -22,7 +21,7 @@ void DataSender::SendMyData(MesageIdentifiers status)
     message.registrationData.pass = userData.pass.toStdString();
 
 
-    userData.getSocket()->write(QByteArray::fromStdString(Mpack::puckMes(message)));
+    userData.getSocket()->write(QByteArray::fromStdString(Mpack::puck(message)));
 
     if (!userData.getSocket()->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << userData.getSocket()->errorString();
@@ -33,21 +32,7 @@ void DataSender::SendMyData(MesageIdentifiers status)
 void DataSender::SendMyMasseg(Message message)
 {
     if (userData.getSocket()->state() == QAbstractSocket::ConnectedState) {
-        userData.getSocket()->write(Mpack::puckMes(message).data());
-
-
-        if (!userData.getSocket()->waitForBytesWritten(5000)) {
-            qWarning() << "Sending data error:" << userData.getSocket()->errorString();
-        }
-    } else {
-        qDebug() << "Socket not connected";
-    }
-}
-
-void DataSender::SendMyKey(KeySending keysending)
-{
-    if (userData.getSocket()->state() == QAbstractSocket::ConnectedState) {
-        userData.getSocket()->write(Mpack::puckKey(keysending).data());
+        userData.getSocket()->write(Mpack::puck(message).data());
 
 
         if (!userData.getSocket()->waitForBytesWritten(5000)) {
@@ -70,17 +55,6 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
     message.messageData.senderId = userData.id.toStdString();
 
     SendMyMasseg(message);
-}
-
-void DataSender::SendOpenKey(QString id, std::vector<unsigned char> openKey)
-{
-    KeySending keysrnding;
-    keysrnding.id = CryptoEnum::OPENKEY;
-    keysrnding.key.id = id.toStdString();
-    keysrnding.key.key = openKey;
-
-    SendMyKey(keysrnding);
-
 }
 
 

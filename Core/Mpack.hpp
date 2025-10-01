@@ -8,9 +8,6 @@ private:
     Mpack() = delete;
     ~Mpack() = delete;
 public:
-    static std::string puckMes(Message &rawData);
-    static Message unpackMes(std::string rawData);
-
-    static std::string puckKey(KeySending &rawData);
-    static CryptoEnum unpackKey(std::string rawData);
+    static Message unpack(std::string rawData);
+    static std::string puck(Message &rawData);
 };

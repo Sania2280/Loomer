@@ -11,15 +11,14 @@
 
 #pragma GCC diagnostic pop
 
-std::string Mpack::puckMes(Message &rawData){
+std::string Mpack::puck(Message &rawData){
 
     msgpack::sbuffer buffer;
     msgpack::pack(buffer, rawData);
     return std::string(buffer.data(), buffer.size());
 }
 
-
-Message Mpack::unpackMes(std::string rawData) {
+Message Mpack::unpack(std::string rawData) {
 
     msgpack::object_handle oh = msgpack::unpack(rawData.data(), rawData.size());
     msgpack::object obj = oh.get();
@@ -28,22 +27,3 @@ Message Mpack::unpackMes(std::string rawData) {
     obj.convert(data);
     return data;
 }
-
-std::string Mpack::puckKey(CryptoEnum &rawData)
-{
-    msgpack::sbuffer buffer;
-    msgpack::pack(buffer, rawData);
-    return std::string(buffer.data(), buffer.size());
-}
-
-CryptoEnum Mpack::unpackKey(std::string rawData)
-{
-
-    msgpack::object_handle oh = msgpack::unpack(rawData.data(), rawData.size());
-    msgpack::object obj = oh.get();
-
-    CryptoEnum data;
-    obj.convert(data);
-    return data;
-}
-

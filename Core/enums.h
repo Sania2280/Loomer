@@ -44,11 +44,6 @@ enum class ConnectionStat{
     DISCONNECTED
 };
 
-enum class CryptoEnum{
-    NON,
-    OPENKEY
-};
-
 Q_DECLARE_METATYPE(MesageIdentifiers)
 
 #endif // ENUMS_H

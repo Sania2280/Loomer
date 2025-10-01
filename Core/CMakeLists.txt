@@ -19,8 +19,8 @@ FetchContent_MakeAvailable(msgpack-cxx)
 
 FetchContent_Declare(
     libsodium
-    GIT_REPOSITORY https://github.com/Sania2280/sodium
-    GIT_TAG master
+    GIT_REPOSITORY https://github.com/jedisct1/libsodium.git
+    GIT_TAG 1.0.19
 )
 
 FetchContent_MakeAvailable(libsodium)
@@ -35,19 +35,11 @@ add_library(Core STATIC
   enums.h
 )
 
-message(STATUS "libsodium_SOURCE_DIR = ${libsodium_SOURCE_DIR}")
-
-
 target_include_directories(Core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${libsodium_SOURCE_DIR}/libsodium-win64/include
+        ${libsodium_SOURCE_DIR}/src/libsodium/include
 
-)
-
-target_link_directories(Core
-    PUBLIC
-        ${libsodium_SOURCE_DIR}/libsodium-win64/lib
 )
 
 target_link_libraries(Core

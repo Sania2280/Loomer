@@ -13,7 +13,7 @@
 #include <QDir>
 #include <QTimer>
 
-#include "diffiehellman.h"
+
 #include "enums.h"
 
 Config::Settings Config::settings;
@@ -55,8 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     SendToServerReadyFalg(messToSend);
 
-    DiffieHellman secure;
-    secure.ShearingKeys("123");
 
 }
 
@@ -88,6 +86,8 @@ void MainWindow::SendToServerReadyFalg(Message message)
 
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
+
+            Message message;
 
             SendToServerMessage(Interlocutor,  ui->lineEdit->text());
 

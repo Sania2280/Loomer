@@ -8,6 +8,7 @@
 #include <QTcpSocket>
 
 
+
 class DataSender : public QObject
 {
     Q_OBJECT
@@ -17,12 +18,8 @@ public:
 
     void SendMyData(MesageIdentifiers status);
     void SendMyMasseg(Message message);
-    void SendMyKey(KeySending keysending);
 
     void MessPacker(QString ResNick, QString Message);
-
-public slots:
-    void SendOpenKey(QString id, std::vector<unsigned char> openKey);
 
 };
 
