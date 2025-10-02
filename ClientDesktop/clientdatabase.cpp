@@ -50,6 +50,7 @@ void ClientDataBase::AddUser(Message mesege)
     QJsonObject newUser;
     newUser["nick"] = QString::fromStdString(mesege.newOrDeleteClientInNet.nick);
     newUser["stat"] = true;
+    // newUser["openKey"];
 
     database[userID] = newUser;
 

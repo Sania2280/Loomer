@@ -22,9 +22,8 @@ struct MessageData
 {
     std::string senderId;
     std::string resivId;
-    std::string resivIpAddress;
     std::string message;
-    MSGPACK_DEFINE(message, senderId, resivId, resivIpAddress);
+    MSGPACK_DEFINE(message, senderId, resivId);
 
 };
 
@@ -52,11 +51,19 @@ struct Reconnect
 
 };
 
+struct CrypKey
+{
+    std::vector<unsigned char> openKey;
+    MSGPACK_DEFINE( openKey);
+};
+
 struct Message
 {
     Message() {}
 
     MesageIdentifiers id = MesageIdentifiers::NONE;
+
+
     std::string dbID;
 
     MessageData messageData ;
@@ -64,7 +71,9 @@ struct Message
     RegistrationData registrationData;
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
-    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect);
+    CrypKey cryptoKey;
+
+    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect, cryptoKey);
 };
 
 

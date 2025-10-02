@@ -1,4 +1,3 @@
-#include "qmutex.h"
 #include <QDebug>
 #include <QStringBuilder>
 #include <QTimer>
@@ -8,6 +7,7 @@
 #include "enums.h"
 #include "cliendatabase.h"
 #include"message.h"
+#include "bufer.h"
 
 #include "Mpack.hpp"
 
@@ -18,8 +18,7 @@
 
 #include "Mpack.hpp"
 
-
-QMutex server::mutex;
+extern Buf buf;
 
 server::server(const Config::Settings& aSettings) {
     if (this->listen(aSettings.server_channel, aSettings.server_port)) {
@@ -63,8 +62,47 @@ void server::slotsReadyRead() {
     if (socket) {
 
         qInfo() << "Reading data...";
+
+        buf.getInstance().bufer.append(socket->readAll());
+
         ClienDataBase clientDB;
-        Message message = Mpack::unpack(socket->readAll().toStdString());
+
+        Message message;
+
+        while (true) {
+            // ждём хотя бы 4 байта для длины
+            if (buf.getInstance().bufer.size() < static_cast<int>(sizeof(quint32)))
+            {
+                break;
+            }
+
+            quint32 size_be;
+            memcpy(&size_be, buf.getInstance().bufer.constData(), sizeof(size_be));
+            quint32 size = qFromBigEndian(size_be);
+            qDebug() << "Mes size: " << size;
+
+            // ждём пока придёт всё сообщение
+            if (buf.getInstance().bufer.size() < static_cast<int>(sizeof(quint32) + size))
+            {
+                break;
+            }
+
+            // извлекаем сообщение
+            QByteArray msgData = buf.getInstance().bufer.mid(sizeof(quint32), static_cast <qsizetype> (size));
+
+            // удаляем его из буфера
+            buf.getInstance().bufer.remove(
+                0,
+                static_cast<qsizetype>(sizeof(quint32) + size));
+            // распаковываем msgpack
+            message = Mpack::unpack(msgData.toStdString());
+
+            qDebug() << "Got the message!";
+        }
+
+        buf.getInstance().bufer.clear();
+
+        // Message message = Mpack::unpack(socket->readAll().toStdString());
         QString id = clientDB.GetId(QString::number(socket->socketDescriptor()));
 
         if (message.id == MesageIdentifiers::MESAGE) {

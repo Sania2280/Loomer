@@ -2,7 +2,6 @@
 #define SENDING_H
 
 #include <QDebug>
-#include <QMutex>
 #include <QThread>
 #include <QTimer>
 

@@ -9,7 +9,6 @@
 
 
 #include <qtimer.h>
-#include <QThread>
 
 extern UserData &userData ;
 QTcpSocket* Reconnection::socket = nullptr;
@@ -128,9 +127,44 @@ void Reconnection::setConnection() {
 
 void Reconnection::slotReadyRed()
 {
+    Message message;
 
-    Message message = Mpack::unpack(socket->readAll().toStdString());
+    userData.getInstance().bufer.append(socket->readAll());
 
+    while (true) {
+        // ждём хотя бы 4 байта для длины
+        if (userData.getInstance().bufer.size() < static_cast<int>(sizeof(size_t)))
+        {
+            break;
+        }
+
+        size_t size;
+        memcpy(&size, userData.getInstance().bufer.constData(), sizeof(size_t));
+        qDebug() << "Mes size: " << size;
+
+        // ждём пока придёт всё сообщение
+        if (userData.getInstance().bufer.size() < static_cast<int>(sizeof(size_t) + size))
+        {
+            break;
+        }
+
+        // извлекаем сообщение
+        QByteArray msgData = userData.getInstance().bufer.mid(sizeof(size_t), static_cast <qsizetype> (size));
+
+        // удаляем его из буфера
+        userData.getInstance().bufer.remove(
+            0,
+            static_cast<qsizetype>(sizeof(size_t) + size));
+        // распаковываем msgpack
+        message = Mpack::unpack(msgData.toStdString());
+
+        qDebug() << "Got the message!";
+    }
+
+    userData.getInstance().bufer.clear();
+
+
+    // Message message = Mpack::unpack(socket->readAll().toStdString());
 
 
     switch (message.id) {
@@ -200,11 +234,11 @@ void Reconnection::slotReadyRed()
 
         case MesageIdentifiers::SIGN_SEC:{}
 
-
         case MesageIdentifiers::LOG:{}
         case MesageIdentifiers::SIGN:{}
         case MesageIdentifiers::NONE:{}
         case MesageIdentifiers::ID_MY:{}
+        case MesageIdentifiers::OPENKEY:{}
         case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
             default:
         break;

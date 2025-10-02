@@ -1,5 +1,4 @@
 #include <QDebug>
-#include <QMutex>
 #include <QThread>
 #include <QTimer>
 #include <windows.h>
@@ -19,7 +18,6 @@
 
 #pragma GCC diagnostic pop
 
-QMutex mutex1;
 
 Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
@@ -133,10 +131,18 @@ void Sending::SendToSocket(QString id, Message &message) {
         return;
     }
 
+    QByteArray mes;
 
-    ClientsData[id].socket->write(Mpack::puck(message).data());
+    auto sub = Mpack::puck(message);
+    size_t size = sub.size();
 
-    ClientsData[id].socket->flush();
+    mes.append(reinterpret_cast <char *>(&size), sizeof(size));
+    mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+    ClientsData[id].socket->write(mes);
+
+    // ClientsData[id].socket->write(Mpack::puck(message).data());
+    // ClientsData[id].socket->flush();
 
 
     // if (!socket->waitForBytesWritten(5000)) { // Timeout для предотвращения вечного ожидания
@@ -154,7 +160,17 @@ void Sending::SendToSocketLogInData(QTcpSocket *socket, Message &message)
         return;
     }
 
-    socket->write(Mpack::puck(message).data());
+
+    QByteArray mes;
+
+    auto sub = Mpack::puck(message);
+    size_t size = sub.size();
+
+    mes.append(reinterpret_cast <char *>(&size), sizeof(size));
+    mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+
+    socket->write(mes);
 
     // socket->flush();
 

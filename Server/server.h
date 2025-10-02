@@ -2,7 +2,6 @@
 #define SERVER_H
 
 #include "message.h"
-#include "qmutex.h"
 #include <QList>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -32,7 +31,6 @@ public:
     QMap<QString , ClientInfo> ClientsData;
 
 private:
-    static QMutex mutex;
 
     Sending *sendingPtr = nullptr;
     qint16 server_port;

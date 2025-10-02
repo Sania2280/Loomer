@@ -2,6 +2,8 @@
 
 #include <QString>
 #include "message.h"
+#include <msgpack.hpp>
+
 
 class Mpack{
 private:
