@@ -57,6 +57,14 @@ struct CrypKey
     MSGPACK_DEFINE( openKey);
 };
 
+struct OpenData
+{
+    std::vector<unsigned char> p;
+    std::vector<unsigned char> q;
+    std::string resId;
+    MSGPACK_DEFINE(p, q, resId);
+};
+
 struct Message
 {
     Message() {}
@@ -72,8 +80,9 @@ struct Message
     NewOrDeleteClientInNet newOrDeleteClientInNet;
 
     CrypKey cryptoKey;
+    OpenData openData;
 
-    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect, cryptoKey);
+    MSGPACK_DEFINE(id, dbID, messageData, registrationData, newOrDeleteClientInNet, reconnect, cryptoKey, openData);
 };
 
 

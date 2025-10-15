@@ -2,11 +2,8 @@
 #define KEYGENERATOR_H
 
 #include <QObject>
-#include <QWidget>
 
-#include "sodium.h"
-
-class KeyGenerator : public QObject
+class KeyGenerator :QObject
 {
     Q_OBJECT
 public:

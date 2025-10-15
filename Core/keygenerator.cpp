@@ -1,4 +1,5 @@
 #include "keygenerator.h"
+#include "sodium.h"
 
 KeyGenerator::KeyGenerator() {}
 

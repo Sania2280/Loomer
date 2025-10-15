@@ -32,6 +32,7 @@ public:
     // static bool mainWindExe;
 
     void connections();
+    void cryptoConnection();
 
 private slots:
 
@@ -59,6 +60,7 @@ signals:
     void mainWindPrintMessage(QString message);
     void regWindErrorWorker(MesageIdentifiers id);
     void regWindConnectionStatWorker(ConnectionStat stat);
+    void getOpenData();
 };
 
 #endif // RECONNECTION_H

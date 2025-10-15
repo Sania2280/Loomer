@@ -20,6 +20,7 @@ public:
     void SendMyMasseg(Message message);
 
     void MessPacker(QString ResNick, QString Message);
+    void SendKeyIniForServer(QString ResNick);
 
 };
 

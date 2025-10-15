@@ -3,14 +3,14 @@
 
 #include <QObject>
 #include <QWidget>
+#include "message.h"
+
 
 class KeyExchange
 {
 public:
     KeyExchange();
-
-private:
-    void KeyGeneraot();
+    Message GetOpenKey(std::string resId);
 };
 
 #endif // KEYEXCHANGE_H

@@ -221,6 +221,9 @@ void server::slotsReadyRead() {
                 qWarning() << "User Exist";
             }
         }
+        else if(message.id == MesageIdentifiers::OPENDATA){
+
+        }
     }
 }
 

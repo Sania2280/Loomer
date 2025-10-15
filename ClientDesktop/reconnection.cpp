@@ -1,6 +1,7 @@
 #include "config.h"
 #include "message.h"
 #include "Mpack.hpp"
+#include "messdatadase.h"
 #include "userdata.h"
 #include "regwindow.h"
 #include "reconnection.h"
@@ -14,6 +15,7 @@ extern UserData &userData ;
 QTcpSocket* Reconnection::socket = nullptr;
 bool Reconnection::Close_Window_stat = false;
 ClientDataBase DB;
+MessDatadase mesDB;
 
 Reconnection::Reconnection(QObject* parent ) :QObject(parent){
 
@@ -32,7 +34,11 @@ void Reconnection::connections()
     connect(Reconnection::getInterface(), &Reconnection::mainWindSocketPrint, mainWind, &MainWindow::Socket_print);
     connect(Reconnection::getInterface(), &Reconnection::mainWindSocketDelete, mainWind, &MainWindow::Socket_delete);
     connect(Reconnection::getInterface(), &Reconnection::mainWindPrintMessage, mainWind, &MainWindow::PrintMassage);
+}
 
+void Reconnection::cryptoConnection()
+{
+    connect(Reconnection::getInterface(), &Reconnection::getOpenData, )
 }
 
 void Reconnection::createSocket()
@@ -227,7 +233,14 @@ void Reconnection::slotReadyRed()
             if(!userData.mainWindStarted){
                 userData.id = QString::fromStdString(message.registrationData.id);
                 DB.CreateDB();
+                mesDB.CreateDB();
                 emit regWindow->CloseWindow();
+            }
+        }
+        case MesageIdentifiers::OPENDATA:
+        {
+            if (userData.mainWindStarted){
+
             }
         }
         case MesageIdentifiers::RECONNECTION:{}

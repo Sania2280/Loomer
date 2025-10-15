@@ -27,60 +27,60 @@ void Sending::MessagePacker(MesageIdentifiers mesId, QString newId, QMap<QString
 {
     ClientsData = clientsData;
 
-    QThread::msleep(150);
+    QThread::msleep(250);
 
 
-        for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
+    for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
 
-            QString key = orderdId.key();
-            server::ClientInfo orderdClient = orderdId.value();
-
-
-            // Пропускаем отключенные сокеты
-            if (orderdClient.socket->state() != QAbstractSocket::ConnectedState) {
-                qWarning() << "Skipping disconnected socket:" << orderdClient.socket->socketDescriptor();
-                continue;
-            }
-
-            // Пропускаем сам себя
-            if (newId == key) {
-                continue;
-            }
-
-            // Отправляем новому клиенту информацию о других сокетах
-
-            MesageIdentifiers MesidToSentd = MesageIdentifiers::NONE;
-
-            ClienDataBase clientDB;
-            if(mesId == MesageIdentifiers::ID_CLIENT || mesId == MesageIdentifiers::CLIENT_READY_TO_WORCK){
-                MesidToSentd = MesageIdentifiers::ID_CLIENT;
-            }
-            else if(mesId == MesageIdentifiers::RECONNECTION){
-                MesidToSentd = MesageIdentifiers::RECONNECTION;
-            }
-
-            if(MesidToSentd == MesageIdentifiers::NONE){
-                qWarning() << "Mess Packer ERROR";
-            }
-
-            Message messToSend1 = ObjectToSend(MesidToSentd,
-                                               key,
-                                               orderdClient.nick,
-                                               true);
+        QString key = orderdId.key();
+        server::ClientInfo orderdClient = orderdId.value();
 
 
-            SendToSocket(newId, messToSend1);
-
-            // Отправляем другим сокетам информацию о новом клиенте
-
-
-            Message messToSend2 = ObjectToSend(MesidToSentd,
-                                               newId,
-                                               ClientsData[newId].nick,
-                                               true);
-
-            SendToSocket(key, messToSend2);
+        // Пропускаем отключенные сокеты
+        if (orderdClient.socket->state() != QAbstractSocket::ConnectedState) {
+            qWarning() << "Skipping disconnected socket:" << orderdClient.socket->socketDescriptor();
+            continue;
         }
+
+        // Пропускаем сам себя
+        if (newId == key) {
+            continue;
+        }
+
+        // Отправляем новому клиенту информацию о других сокетах
+
+        MesageIdentifiers MesidToSentd = MesageIdentifiers::NONE;
+
+        ClienDataBase clientDB;
+        if(mesId == MesageIdentifiers::ID_CLIENT || mesId == MesageIdentifiers::CLIENT_READY_TO_WORCK){
+            MesidToSentd = MesageIdentifiers::ID_CLIENT;
+        }
+        else if(mesId == MesageIdentifiers::RECONNECTION){
+            MesidToSentd = MesageIdentifiers::RECONNECTION;
+        }
+
+        if(MesidToSentd == MesageIdentifiers::NONE){
+            qWarning() << "Mess Packer ERROR";
+        }
+
+        Message messToSend1 = ObjectToSend(MesidToSentd,
+                                           key,
+                                           orderdClient.nick,
+                                           true);
+
+
+        SendToSocket(newId, messToSend1);
+
+        // Отправляем другим сокетам информацию о новом клиенте
+
+
+        Message messToSend2 = ObjectToSend(MesidToSentd,
+                                           newId,
+                                           ClientsData[newId].nick,
+                                           true);
+
+        SendToSocket(key, messToSend2);
+    }
 
 
 }
@@ -142,7 +142,7 @@ void Sending::SendToSocket(QString id, Message &message) {
     ClientsData[id].socket->write(mes);
 
     // ClientsData[id].socket->write(Mpack::puck(message).data());
-    // ClientsData[id].socket->flush();
+    ClientsData[id].socket->flush();
 
 
     // if (!socket->waitForBytesWritten(5000)) { // Timeout для предотвращения вечного ожидания

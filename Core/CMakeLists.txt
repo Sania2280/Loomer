@@ -33,6 +33,7 @@ add_library(Core STATIC
   Mpack.cpp
   message.h
   enums.h
+  keygenerator.h keygenerator.cpp
 )
 
 message(STATUS "libsodium_SOURCE_DIR = ${libsodium_SOURCE_DIR}")

@@ -5,7 +5,8 @@
 #include "UserData.h"
 #include "clientdatabase.h"
 #include "message.h"
-
+#include "messdatadase.h"
+#include "keyexchange.h"
 // #include "keygenerator.h"
 
 extern UserData &userData ;
@@ -78,8 +79,11 @@ void DataSender::SendMyMasseg(Message message)
 
 void DataSender::MessPacker(QString ResNick, QString Mess)
 {
+
+
     ClientDataBase DB;
     QString id = DB.GetId(ResNick);
+
 
     Message message;
     message.id = MesageIdentifiers::MESAGE;
@@ -87,7 +91,19 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
     message.messageData.resivId = id.toStdString();
     message.messageData.senderId = userData.id.toStdString();
 
+    MessDatadase mesDB;
+    mesDB.SetMes(Mess, ResNick);
+
     SendMyMasseg(message);
+}
+
+void DataSender::SendKeyIniForServer(QString ResNick)
+{
+    KeyExchange keyEx;
+
+    Message message = keyEx.GetOpenKey(ResNick.toStdString());
+    SendMyMasseg(message);
+
 }
 
 

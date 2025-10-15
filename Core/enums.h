@@ -18,6 +18,7 @@ enum class MesageIdentifiers {
     SIGN_FAIL_EXIST,
     CLIENT_READY_TO_WORCK,
     OPENKEY,
+    OPENDATA,
     RECONNECTION
 };
 
