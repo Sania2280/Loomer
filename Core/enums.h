@@ -17,6 +17,9 @@ enum class MesageIdentifiers {
     SIGN_FAIL,
     SIGN_FAIL_EXIST,
     CLIENT_READY_TO_WORCK,
+    OPENKEY,
+    OPENDATA,
+    OPENDATAMY,
     RECONNECTION
 };
 
@@ -43,6 +46,8 @@ enum class ConnectionStat{
     CONNECTED,
     DISCONNECTED
 };
+
+
 
 Q_DECLARE_METATYPE(MesageIdentifiers)
 

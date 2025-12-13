@@ -10,13 +10,13 @@ setComunication::setComunication(QObject *parent)
     timer->start();
 }
 
-void setComunication::workInThread()
+ void setComunication::workInThread()
 {
-    // qDebug() << "Working in thread:";
-    for (auto i : Sockets) {
-        qDebug() << i;
-    }
-}
+//     // qDebug() << "Working in thread:";
+//     for (auto i : Sockets) {
+//         qDebug() << i;
+//     }
+ }
 
 void setComunication::fromMain(server *server)
 {

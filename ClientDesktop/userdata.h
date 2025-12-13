@@ -22,6 +22,9 @@ public:
      QString id;
      RegWind status;
 
+     QByteArray bufer;
+     quint32 expSize;
+
      bool mainWindStarted;
 
      struct ClientInfo

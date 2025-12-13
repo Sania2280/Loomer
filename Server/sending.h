@@ -2,7 +2,6 @@
 #define SENDING_H
 
 #include <QDebug>
-#include <QMutex>
 #include <QThread>
 #include <QTimer>
 
@@ -28,6 +27,9 @@ public slots:
     void SendToSocket(QString socket, Message &message);
     void SendToSocketLogInData(QTcpSocket* socket, Message &message);
     void MessagePacker(MesageIdentifiers mesId, QString newId,  QMap<QString , server::ClientInfo> &clientsData);
+    void SendOpenData(QString sendId, QString resId,
+                      std::vector<unsigned char> p,
+                      std::vector<unsigned char> q);
 };
 
 #endif // SENDING_H

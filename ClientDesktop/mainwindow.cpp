@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "messdatadase.h"
 #include "ui_mainwindow.h"
 #include "config.h"
 
@@ -72,9 +73,9 @@ MainWindow::~MainWindow() {
 }
 
 
-void MainWindow::SendToServerMessage(QString Nick, QString Message) {
+void MainWindow::SendToServerMessage(QString Nick) {
     DataSender dataSendler;
-    dataSendler.MessPacker(Nick, Message);
+    dataSendler.SendKeyIniForServer(Nick);
 
 }
 
@@ -87,28 +88,31 @@ void MainWindow::SendToServerReadyFalg(Message message)
 void MainWindow::on_lineEdit_returnPressed() {
     if(!Interlocutor.isEmpty() && ui->lineEdit->text() != QString()){
 
-            Message message;
+        MessDatadase mesDB;
+        mesDB.SetMes(ui->lineEdit->text(), Interlocutor);
 
-            SendToServerMessage(Interlocutor,  ui->lineEdit->text());
+        Message message;
 
-            CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
-            QWidget *container = new QWidget;
-            QHBoxLayout *layout = new QHBoxLayout(container);
+        SendToServerMessage(Interlocutor);
 
-            layout->setContentsMargins(0, 0, 0, 0);
-            layout->setSpacing(0);
+        CustomListItem *widget = new CustomListItem(ui->lineEdit->text());
+        QWidget *container = new QWidget;
+        QHBoxLayout *layout = new QHBoxLayout(container);
 
-            layout->addStretch();
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
 
-            layout->addWidget(widget);
+        layout->addStretch();
 
-            container->setLayout(layout);
+        layout->addWidget(widget);
 
-            // Создаём элемент списка и устанавливаем контейнер как виджет элемента
-            QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
-            item->setSizeHint(container->sizeHint());
-            ui->listWidget_2->setItemWidget(item, container);
-            ui->listWidget_2->scrollToBottom();
+        container->setLayout(layout);
+
+        // Создаём элемент списка и устанавливаем контейнер как виджет элемента
+        QListWidgetItem *item = new QListWidgetItem(ui->listWidget_2);
+        item->setSizeHint(container->sizeHint());
+        ui->listWidget_2->setItemWidget(item, container);
+        ui->listWidget_2->scrollToBottom();
 
 
 

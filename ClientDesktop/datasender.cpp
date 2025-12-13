@@ -1,9 +1,13 @@
 #include <Mpack.hpp>
+#include <qendian.h>
 
 #include "datasender.h"
 #include "UserData.h"
 #include "clientdatabase.h"
 #include "message.h"
+#include "messdatadase.h"
+#include "keyexchange.h"
+// #include "keygenerator.h"
 
 extern UserData &userData ;
 
@@ -21,18 +25,47 @@ void DataSender::SendMyData(MesageIdentifiers status)
     message.registrationData.pass = userData.pass.toStdString();
 
 
-    userData.getSocket()->write(QByteArray::fromStdString(Mpack::puck(message)));
+    QByteArray mes;
+
+    auto sub = Mpack::puck(message);
+    quint32 size = static_cast<quint32> (sub.size());
+    quint32 size_be = qToBigEndian(size);
+    qDebug() << "Size1: " << size;
+
+    // mes.push_back(reinterpret_cast <char *>(&size));
+    // mes.push_back(sub.data());
+
+    mes.append(reinterpret_cast <char *>(&size_be), sizeof(size_be));
+    mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+    userData.getSocket()->write(mes);
+    // userData.getSocket()->write(QByteArray::fromStdString(Mpack::puck(message)));
 
     if (!userData.getSocket()->waitForBytesWritten(5000)) {
         qWarning() << "Sending data error:" << userData.getSocket()->errorString();
     }
 
+    userData.bufer.clear();
+
 }
 
 void DataSender::SendMyMasseg(Message message)
 {
+
     if (userData.getSocket()->state() == QAbstractSocket::ConnectedState) {
-        userData.getSocket()->write(Mpack::puck(message).data());
+
+        QByteArray mes;
+
+        auto sub = Mpack::puck(message);
+        quint32 size = static_cast<quint32> (sub.size());
+        quint32 size_be = qToBigEndian(size);
+
+        mes.append(reinterpret_cast <char *>(&size_be), sizeof(size_be));
+        mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+        userData.getSocket()->write(mes);
+        // QByteArray data = Mpack::puck(message).data();
+        // qDebug() << "Mes size:" << data.size();
 
 
         if (!userData.getSocket()->waitForBytesWritten(5000)) {
@@ -41,12 +74,18 @@ void DataSender::SendMyMasseg(Message message)
     } else {
         qDebug() << "Socket not connected";
     }
+    userData.bufer.clear();
+
 }
 
 void DataSender::MessPacker(QString ResNick, QString Mess)
 {
+
+
+
     ClientDataBase DB;
     QString id = DB.GetId(ResNick);
+
 
     Message message;
     message.id = MesageIdentifiers::MESAGE;
@@ -54,7 +93,30 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
     message.messageData.resivId = id.toStdString();
     message.messageData.senderId = userData.id.toStdString();
 
+
+
     SendMyMasseg(message);
+}
+
+void DataSender::SendKeyIniForServer(QString ResNick)
+{
+    KeyExchange keyEx;
+    ClientDataBase DB;
+
+
+    Message message = keyEx.GetOpenDataMessage(DB.GetId(ResNick).toStdString(), userData.id.toStdString());
+    SendMyMasseg(message);
+
+}
+
+void DataSender::SendMyOpenKey(QString resId, QString openKey)
+{
+    KeyExchange keyEx;
+    ClientDataBase DB;
+
+    Message message = keyEx.GetOpenKeyMessage(resId.toStdString(), userData.id.toStdString(), openKey.toStdString());
+    SendMyMasseg(message);
+
 }
 
 

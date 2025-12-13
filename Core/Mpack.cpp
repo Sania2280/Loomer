@@ -1,5 +1,4 @@
 #include "Mpack.hpp"
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -17,6 +16,8 @@ std::string Mpack::puck(Message &rawData){
     msgpack::pack(buffer, rawData);
     return std::string(buffer.data(), buffer.size());
 }
+
+
 
 Message Mpack::unpack(std::string rawData) {
 

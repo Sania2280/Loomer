@@ -1,5 +1,4 @@
 #include <QDebug>
-#include <QMutex>
 #include <QThread>
 #include <QTimer>
 #include <windows.h>
@@ -19,7 +18,6 @@
 
 #pragma GCC diagnostic pop
 
-QMutex mutex1;
 
 Sending::Sending(server *srv, QObject *parent)
     : QThread(parent), m_server(srv) {}
@@ -29,60 +27,60 @@ void Sending::MessagePacker(MesageIdentifiers mesId, QString newId, QMap<QString
 {
     ClientsData = clientsData;
 
-    QThread::msleep(150);
+    QThread::msleep(250);
 
 
-        for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
+    for (auto orderdId = ClientsData.begin(); orderdId != ClientsData.end(); ++orderdId) {
 
-            QString key = orderdId.key();
-            server::ClientInfo orderdClient = orderdId.value();
-
-
-            // Пропускаем отключенные сокеты
-            if (orderdClient.socket->state() != QAbstractSocket::ConnectedState) {
-                qWarning() << "Skipping disconnected socket:" << orderdClient.socket->socketDescriptor();
-                continue;
-            }
-
-            // Пропускаем сам себя
-            if (newId == key) {
-                continue;
-            }
-
-            // Отправляем новому клиенту информацию о других сокетах
-
-            MesageIdentifiers MesidToSentd = MesageIdentifiers::NONE;
-
-            ClienDataBase clientDB;
-            if(mesId == MesageIdentifiers::ID_CLIENT || mesId == MesageIdentifiers::CLIENT_READY_TO_WORCK){
-                MesidToSentd = MesageIdentifiers::ID_CLIENT;
-            }
-            else if(mesId == MesageIdentifiers::RECONNECTION){
-                MesidToSentd = MesageIdentifiers::RECONNECTION;
-            }
-
-            if(MesidToSentd == MesageIdentifiers::NONE){
-                qWarning() << "Mess Packer ERROR";
-            }
-
-            Message messToSend1 = ObjectToSend(MesidToSentd,
-                                               key,
-                                               orderdClient.nick,
-                                               true);
+        QString key = orderdId.key();
+        server::ClientInfo orderdClient = orderdId.value();
 
 
-            SendToSocket(newId, messToSend1);
-
-            // Отправляем другим сокетам информацию о новом клиенте
-
-
-            Message messToSend2 = ObjectToSend(MesidToSentd,
-                                               newId,
-                                               ClientsData[newId].nick,
-                                               true);
-
-            SendToSocket(key, messToSend2);
+        // Пропускаем отключенные сокеты
+        if (orderdClient.socket->state() != QAbstractSocket::ConnectedState) {
+            qWarning() << "Skipping disconnected socket:" << orderdClient.socket->socketDescriptor();
+            continue;
         }
+
+        // Пропускаем сам себя
+        if (newId == key) {
+            continue;
+        }
+
+        // Отправляем новому клиенту информацию о других сокетах
+
+        MesageIdentifiers MesidToSentd = MesageIdentifiers::NONE;
+
+        ClienDataBase clientDB;
+        if(mesId == MesageIdentifiers::ID_CLIENT || mesId == MesageIdentifiers::CLIENT_READY_TO_WORCK){
+            MesidToSentd = MesageIdentifiers::ID_CLIENT;
+        }
+        else if(mesId == MesageIdentifiers::RECONNECTION){
+            MesidToSentd = MesageIdentifiers::RECONNECTION;
+        }
+
+        if(MesidToSentd == MesageIdentifiers::NONE){
+            qWarning() << "Mess Packer ERROR";
+        }
+
+        Message messToSend1 = ObjectToSend(MesidToSentd,
+                                           key,
+                                           orderdClient.nick,
+                                           true);
+
+
+        SendToSocket(newId, messToSend1);
+
+        // Отправляем другим сокетам информацию о новом клиенте
+
+
+        Message messToSend2 = ObjectToSend(MesidToSentd,
+                                           newId,
+                                           ClientsData[newId].nick,
+                                           true);
+
+        SendToSocket(key, messToSend2);
+    }
 
 
 }
@@ -117,6 +115,8 @@ void Sending::GetDisconnectedClient(qintptr socket) {
 }
 
 void Sending::SendToSocket(QString id, Message &message) {
+    QThread::msleep(100);
+
 
     if (!ClientsData.contains(id)) {
         qWarning() << "ID not found in ClientsData:" << id;
@@ -133,9 +133,17 @@ void Sending::SendToSocket(QString id, Message &message) {
         return;
     }
 
+    QByteArray mes;
 
-    ClientsData[id].socket->write(Mpack::puck(message).data());
+    auto sub = Mpack::puck(message);
+    size_t size = sub.size();
 
+    mes.append(reinterpret_cast <char *>(&size), sizeof(size));
+    mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+    ClientsData[id].socket->write(mes);
+
+    // ClientsData[id].socket->write(Mpack::puck(message).data());
     ClientsData[id].socket->flush();
 
 
@@ -154,9 +162,81 @@ void Sending::SendToSocketLogInData(QTcpSocket *socket, Message &message)
         return;
     }
 
-    socket->write(Mpack::puck(message).data());
+
+    QByteArray mes;
+
+    auto sub = Mpack::puck(message);
+    size_t size = sub.size();
+
+    mes.append(reinterpret_cast <char *>(&size), sizeof(size));
+    mes.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+
+    socket->write(mes);
 
     // socket->flush();
+
+}
+
+void Sending::SendOpenData(QString sendId, QString resId, std::vector<unsigned char> p, std::vector<unsigned char> q)
+{
+
+    if (!ClientsData.contains(sendId) || !ClientsData.contains(resId)) {
+        qWarning() << "ID not found in ClientsData:";
+        for (auto it = ClientsData.cbegin(); it != ClientsData.cend(); ++it)
+            qDebug() << it.key();
+
+        qDebug() << "sendId:" << sendId << "length:" << sendId.length();
+        for (auto it = ClientsData.cbegin(); it != ClientsData.cend(); ++it)
+            qDebug() << "key:" << it.key() << "length:" << it.key().length();
+
+        return;
+    }
+    if (!ClientsData[resId].socket || !ClientsData[sendId].socket) {
+        qWarning() << "Socket is nullptr for ID:";
+        return;
+    }
+
+    if (ClientsData[resId].socket->state() != QAbstractSocket::ConnectedState ||
+        ClientsData[sendId].socket->state() != QAbstractSocket::ConnectedState) {
+        qWarning() << "Socket not connected:" ;
+        return;
+    }
+
+    QByteArray mes1;
+
+    Message message1;
+    message1.id = MesageIdentifiers::OPENDATAMY;
+    message1.openData.p = p;
+    message1.openData.q = q;
+    message1.openData.resId = resId.toStdString();
+
+    auto sub = Mpack::puck(message1);
+    size_t size1 = sub.size();
+
+    mes1.append(reinterpret_cast <char *>(&size1), sizeof(size1));
+    mes1.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+    ClientsData[sendId].socket->write(mes1);
+    ClientsData[sendId].socket->flush();
+
+
+    QByteArray mes2;
+
+    Message message2;
+    message2.id = MesageIdentifiers::OPENDATA;
+    message2.openData.p = p;
+    message2.openData.q = q;
+    message2.openData.sendId = sendId.toStdString();
+
+    auto sub2 = Mpack::puck(message2);
+    size_t size2 = sub2.size();
+
+    mes2.append(reinterpret_cast <char *>(&size2), sizeof(size2));
+    mes2.append(sub2.data(), static_cast <qsizetype> (sub2.size()));
+
+    ClientsData[resId].socket->write(mes2);
+    ClientsData[resId].socket->flush();
 
 }
 
