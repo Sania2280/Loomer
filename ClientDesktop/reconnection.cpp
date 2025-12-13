@@ -1,3 +1,4 @@
+#include "aes.h"
 #include "config.h"
 #include "message.h"
 #include "Mpack.hpp"
@@ -7,6 +8,9 @@
 #include "reconnection.h"
 #include "mainwindow.h"
 #include "clientdatabase.h"
+#include "keygenerator.h"
+#include "datasender.h"
+#include <QThread>
 
 
 #include <qtimer.h>
@@ -38,7 +42,7 @@ void Reconnection::connections()
 
 void Reconnection::cryptoConnection()
 {
-    connect(Reconnection::getInterface(), &Reconnection::getOpenData, )
+    // connect(Reconnection::getInterface(), &Reconnection::getOpenData, )
 }
 
 void Reconnection::createSocket()
@@ -196,7 +200,13 @@ void Reconnection::slotReadyRed()
         case MesageIdentifiers::MESAGE:
         {
             if (userData.mainWindStarted){
-               emit mainWindPrintMessage(QString::fromStdString(message.messageData.message));
+                AES aes;
+
+                QString mes = aes.decryptString(
+                    QString::fromStdString(message.messageData.message),
+                    mesDB.GetSecret(QString::fromStdString(message.messageData.senderId)));
+
+               emit mainWindPrintMessage(mes);
             }
             break;
         }
@@ -236,13 +246,119 @@ void Reconnection::slotReadyRed()
                 mesDB.CreateDB();
                 emit regWindow->CloseWindow();
             }
+            break;
         }
         case MesageIdentifiers::OPENDATA:
         {
             if (userData.mainWindStarted){
 
+                QString p ;
+                QString q ;
+
+                for (size_t i = 0; i < message.openData.p.size(); ++i) {
+                    p += QString::number(message.openData.p[i]);
+                }
+
+                for (size_t i = 0; i < message.openData.q.size(); ++i) {
+                    q += QString::number(message.openData.q[i]);
+                }
+
+                mesDB.SetOpenData(QString().fromStdString(message.openData.sendId), p, q);
+                mesDB.SetStatus(QString().fromStdString(message.openData.sendId), false);
+
+                KeyGenerator keyGen;
+                QString closeKey;
+
+                std::vector<unsigned char> key = keyGen.GetKey();
+
+                for (size_t i = 0; i < key.size(); ++i) {
+                    closeKey += QString::number(key[i]);
+                }
+
+                QString openKey = keyGen.GetOpenKeyOrSecret(q, closeKey, p);
+
+                mesDB.SetCloseKey(QString::fromStdString(message.openData.sendId), closeKey);
+                mesDB.SetOpenKey(QString().fromStdString(message.openData.sendId), openKey);
+
+                DataSender dataSendlser;
+                dataSendlser.SendMyOpenKey(QString::fromStdString(message.openData.sendId), openKey);
+
             }
+            break;
         }
+        case MesageIdentifiers::OPENDATAMY:
+        {
+            qDebug() << "OPENDATAMY";
+            if (userData.mainWindStarted){
+
+
+                QString p ;
+                QString q ;
+
+                for (size_t i = 0; i < message.openData.p.size(); ++i) {
+                    p += QString::number(message.openData.p[i]);
+                }
+
+                for (size_t i = 0; i < message.openData.q.size(); ++i) {
+                    q += QString::number(message.openData.q[i]);
+                }
+
+                mesDB.SetOpenData(QString().fromStdString(message.openData.resId), p, q);
+                mesDB.SetStatus(QString().fromStdString(message.openData.resId), true);
+
+
+                KeyGenerator keyGen;
+                QString closeKey;
+
+                std::vector<unsigned char> key = keyGen.GetKey();
+
+                for (size_t i = 0; i < key.size(); ++i) {
+                    closeKey += QString::number(key[i]);
+                }
+
+                QString openKey = keyGen.GetOpenKeyOrSecret(q, closeKey, p);
+                mesDB.SetCloseKey(QString::fromStdString(message.openData.resId), closeKey);
+                mesDB.SetOpenKey(QString().fromStdString(message.openData.resId), openKey);
+
+                DataSender dataSendlser;
+                dataSendlser.SendMyOpenKey(QString::fromStdString(message.openData.resId), openKey);
+
+            }
+            break;
+        case MesageIdentifiers::OPENKEY:
+        {
+              if (userData.mainWindStarted){
+
+                KeyGenerator keyGen;
+
+                  if(userData.id == QString::fromStdString(message.openKeyPac.resId)){
+
+                      QString p = mesDB.GetP(QString::fromStdString(message.openKeyPac.sendId));
+                      QString closeKey = mesDB.GetCloseKey(QString::fromStdString(message.openKeyPac.sendId));
+
+                      QString secret = keyGen.GetOpenKeyOrSecret(QString::fromStdString(message.openKeyPac.openKey), closeKey, p);
+                      mesDB.SetSecret(QString::fromStdString(message.openKeyPac.sendId), secret);
+                  }
+
+                  bool stat = mesDB.GetStat(QString::fromStdString(message.openKeyPac.sendId));
+
+                  if(stat){
+                      AES aes;
+                      QString crypt = aes.encryptString(mesDB.GetMesage(QString::fromStdString(message.openKeyPac.sendId)),
+                                                           mesDB.GetSecret(QString::fromStdString(message.openKeyPac.sendId)));
+
+                      DataSender dataSendler;
+                      dataSendler.MessPacker(DB.GetNick(QString::fromStdString(message.openKeyPac.sendId)), crypt);
+
+                      mesDB.SetCryptData(crypt, QString::fromStdString(message.openKeyPac.sendId));
+                  }
+
+              }
+              break;
+        }
+
+        }
+
         case MesageIdentifiers::RECONNECTION:{}
 
         case MesageIdentifiers::SIGN_SEC:{}
@@ -251,7 +367,6 @@ void Reconnection::slotReadyRed()
         case MesageIdentifiers::SIGN:{}
         case MesageIdentifiers::NONE:{}
         case MesageIdentifiers::ID_MY:{}
-        case MesageIdentifiers::OPENKEY:{}
         case MesageIdentifiers::CLIENT_READY_TO_WORCK:{}
             default:
         break;

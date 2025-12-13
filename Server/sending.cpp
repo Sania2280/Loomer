@@ -115,6 +115,8 @@ void Sending::GetDisconnectedClient(qintptr socket) {
 }
 
 void Sending::SendToSocket(QString id, Message &message) {
+    QThread::msleep(100);
+
 
     if (!ClientsData.contains(id)) {
         qWarning() << "ID not found in ClientsData:" << id;
@@ -173,6 +175,68 @@ void Sending::SendToSocketLogInData(QTcpSocket *socket, Message &message)
     socket->write(mes);
 
     // socket->flush();
+
+}
+
+void Sending::SendOpenData(QString sendId, QString resId, std::vector<unsigned char> p, std::vector<unsigned char> q)
+{
+
+    if (!ClientsData.contains(sendId) || !ClientsData.contains(resId)) {
+        qWarning() << "ID not found in ClientsData:";
+        for (auto it = ClientsData.cbegin(); it != ClientsData.cend(); ++it)
+            qDebug() << it.key();
+
+        qDebug() << "sendId:" << sendId << "length:" << sendId.length();
+        for (auto it = ClientsData.cbegin(); it != ClientsData.cend(); ++it)
+            qDebug() << "key:" << it.key() << "length:" << it.key().length();
+
+        return;
+    }
+    if (!ClientsData[resId].socket || !ClientsData[sendId].socket) {
+        qWarning() << "Socket is nullptr for ID:";
+        return;
+    }
+
+    if (ClientsData[resId].socket->state() != QAbstractSocket::ConnectedState ||
+        ClientsData[sendId].socket->state() != QAbstractSocket::ConnectedState) {
+        qWarning() << "Socket not connected:" ;
+        return;
+    }
+
+    QByteArray mes1;
+
+    Message message1;
+    message1.id = MesageIdentifiers::OPENDATAMY;
+    message1.openData.p = p;
+    message1.openData.q = q;
+    message1.openData.resId = resId.toStdString();
+
+    auto sub = Mpack::puck(message1);
+    size_t size1 = sub.size();
+
+    mes1.append(reinterpret_cast <char *>(&size1), sizeof(size1));
+    mes1.append(sub.data(), static_cast <qsizetype> (sub.size()));
+
+    ClientsData[sendId].socket->write(mes1);
+    ClientsData[sendId].socket->flush();
+
+
+    QByteArray mes2;
+
+    Message message2;
+    message2.id = MesageIdentifiers::OPENDATA;
+    message2.openData.p = p;
+    message2.openData.q = q;
+    message2.openData.sendId = sendId.toStdString();
+
+    auto sub2 = Mpack::puck(message2);
+    size_t size2 = sub2.size();
+
+    mes2.append(reinterpret_cast <char *>(&size2), sizeof(size2));
+    mes2.append(sub2.data(), static_cast <qsizetype> (sub2.size()));
+
+    ClientsData[resId].socket->write(mes2);
+    ClientsData[resId].socket->flush();
 
 }
 

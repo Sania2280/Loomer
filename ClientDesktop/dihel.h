@@ -7,6 +7,8 @@ class DiHel
 {
 public:
     DiHel();
+    void CloseKeyGen(QString resId);
+    void OpenKeyGen(QString resId);
 };
 
 #endif // DIHEL_H

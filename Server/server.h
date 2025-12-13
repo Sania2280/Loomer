@@ -37,10 +37,11 @@ private:
     QHostAddress::SpecialAddress addressEnum;
 
 signals:
-    void sendingClientData(MesageIdentifiers mesId, QString id, QMap<QString , ClientInfo> &ClientsData);
     void disconnectedClient(qintptr socet);
     void sendingMesage(QString id, Message &message);
     void sendingLogInData(QTcpSocket* socket, Message &message);
+    void sendingClientData(MesageIdentifiers mesId, QString id, QMap<QString , ClientInfo> &ClientsData);
+    void sendingOpenData(QString sendId, QString resId, std::vector<unsigned char> p, std::vector<unsigned char> q);
 };
 
 #endif // SERVER_H

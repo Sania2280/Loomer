@@ -26,6 +26,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libsodium)
 
 message(STATUS "libsodium source dir: ${libsodium_SOURCE_DIR}")
+include_directories("C:/OpenSSL/build/include")
+link_directories("C:/OpenSSL/build/lib64")
+
 
 
 add_library(Core STATIC
@@ -34,6 +37,7 @@ add_library(Core STATIC
   message.h
   enums.h
   keygenerator.h keygenerator.cpp
+  aes.h aes.cpp
 )
 
 message(STATUS "libsodium_SOURCE_DIR = ${libsodium_SOURCE_DIR}")
@@ -58,6 +62,17 @@ target_link_libraries(Core
     PUBLIC
         msgpack-cxx
         libsodium
+)
+
+target_link_libraries(Core
+    PUBLIC
+        msgpack-cxx
+        libsodium
+        "C:/OpenSSL/build/lib64/libssl.a"
+        "C:/OpenSSL/build/lib64/libcrypto.a"
+        ws2_32
+        gdi32
+        crypt32
 )
 
 target_compile_definitions(Core PRIVATE CORE_LIBRARY)

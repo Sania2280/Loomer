@@ -21,6 +21,8 @@ public:
 
     void MessPacker(QString ResNick, QString Message);
     void SendKeyIniForServer(QString ResNick);
+    void SendMyOpenKey(QString resId, QString openKey);
+    void CryptData(QString data, QString resId, QString key);
 
 };
 

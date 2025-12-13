@@ -51,6 +51,7 @@ void DataSender::SendMyData(MesageIdentifiers status)
 
 void DataSender::SendMyMasseg(Message message)
 {
+
     if (userData.getSocket()->state() == QAbstractSocket::ConnectedState) {
 
         QByteArray mes;
@@ -81,6 +82,7 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
 {
 
 
+
     ClientDataBase DB;
     QString id = DB.GetId(ResNick);
 
@@ -91,8 +93,7 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
     message.messageData.resivId = id.toStdString();
     message.messageData.senderId = userData.id.toStdString();
 
-    MessDatadase mesDB;
-    mesDB.SetMes(Mess, ResNick);
+
 
     SendMyMasseg(message);
 }
@@ -100,8 +101,20 @@ void DataSender::MessPacker(QString ResNick, QString Mess)
 void DataSender::SendKeyIniForServer(QString ResNick)
 {
     KeyExchange keyEx;
+    ClientDataBase DB;
 
-    Message message = keyEx.GetOpenKey(ResNick.toStdString());
+
+    Message message = keyEx.GetOpenDataMessage(DB.GetId(ResNick).toStdString(), userData.id.toStdString());
+    SendMyMasseg(message);
+
+}
+
+void DataSender::SendMyOpenKey(QString resId, QString openKey)
+{
+    KeyExchange keyEx;
+    ClientDataBase DB;
+
+    Message message = keyEx.GetOpenKeyMessage(resId.toStdString(), userData.id.toStdString(), openKey.toStdString());
     SendMyMasseg(message);
 
 }

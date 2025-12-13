@@ -19,6 +19,7 @@ enum class MesageIdentifiers {
     CLIENT_READY_TO_WORCK,
     OPENKEY,
     OPENDATA,
+    OPENDATAMY,
     RECONNECTION
 };
 

@@ -60,7 +60,7 @@ signals:
     void mainWindPrintMessage(QString message);
     void regWindErrorWorker(MesageIdentifiers id);
     void regWindConnectionStatWorker(ConnectionStat stat);
-    void getOpenData();
+    // void getOpenData();
 };
 
 #endif // RECONNECTION_H

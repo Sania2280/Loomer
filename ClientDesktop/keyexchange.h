@@ -10,7 +10,8 @@ class KeyExchange
 {
 public:
     KeyExchange();
-    Message GetOpenKey(std::string resId);
+    Message GetOpenDataMessage(std::string resId, std::string sendId);
+    Message GetOpenKeyMessage(std::string resId, std::string sendId, std::string openKey);
 };
 
 #endif // KEYEXCHANGE_H

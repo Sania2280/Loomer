@@ -3,6 +3,7 @@
 #include <QTimer>
 
 #include "server.h"
+#include "keygenerator.h"
 #include "sending.h"
 #include "enums.h"
 #include "cliendatabase.h"
@@ -35,6 +36,7 @@ void server::setSending(Sending &sending) {
     connect(this, &server::disconnectedClient, sendingPtr, &Sending::GetDisconnectedClient);
     connect(this, &server::sendingMesage, sendingPtr, &Sending::SendToSocket);
     connect(this, &server::sendingLogInData, sendingPtr, &Sending::SendToSocketLogInData);
+    connect(this, &server::sendingOpenData, sendingPtr, &Sending::SendOpenData);
 }
 
 void server::incomingConnection(qintptr socketDescriptor) {
@@ -223,6 +225,21 @@ void server::slotsReadyRead() {
         }
         else if(message.id == MesageIdentifiers::OPENDATA){
 
+            KeyGenerator gen;
+
+            std::vector<unsigned char> P = gen.GetKey();
+            std::vector<unsigned char> Q = gen.GetKey();
+
+
+            emit sendingOpenData(clientDB.GetId(QString::number(socket->socketDescriptor())),
+                                 QString::fromStdString(message.openData.resId),
+                                 P,
+                                 Q);
+        }
+        else if(message.id == MesageIdentifiers::OPENKEY){
+
+
+            emit sendingMesage(QString::fromStdString(message.openKeyPac.resId), message);
         }
     }
 }

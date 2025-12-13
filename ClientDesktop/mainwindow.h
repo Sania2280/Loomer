@@ -26,7 +26,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QString Get_Path(Directorys file, Files directory);
-    void SendToServerMessage(QString Nick, QString Message);
+    void SendToServerMessage(QString Nick);
     void SendToServerReadyFalg(Message message);
 
 private slots:
